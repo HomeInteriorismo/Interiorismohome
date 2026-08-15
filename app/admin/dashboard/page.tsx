@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import LogoutButton from "../LogoutButton";
 
 export const revalidate = 0;
 
@@ -6,11 +8,16 @@ export default async function DashboardPage() {
   const supabase = createClient();
 
   const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/admin/login");
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user?.id)
-    .single();
+    .eq("id", user.id)
+    .maybeSingle();
 
   const { count: leadsCount } = await supabase
     .from("leads")
@@ -33,9 +40,7 @@ export default async function DashboardPage() {
               {profile?.name} · {profile?.role}
             </p>
           </div>
-          <form action="/admin/login">
-            <LogoutButton />
-          </form>
+          <LogoutButton />
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,16 +71,5 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
       <p className="text-xs mb-3 text-[#786E5E]">{label}</p>
       <p className="text-3xl font-semibold text-[#221D17]">{value}</p>
     </div>
-  );
-}
-
-function LogoutButton() {
-  return (
-    <a
-      href="/admin/login"
-      className="text-xs px-4 py-2 rounded-full border border-[#E7E0D0] text-[#221D17]"
-    >
-      Cerrar sesión
-    </a>
   );
 }
