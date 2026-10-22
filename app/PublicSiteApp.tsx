@@ -9,6 +9,7 @@ import {
   Eye, EyeOff, Bell, FileText, ClipboardList, Trash2, StickyNote, Phone,
   ChevronDown, Building2, LogIn, Facebook
 } from "lucide-react";
+import catalogData from "@/data/catalog.json";
 
 const PH_OFICINA = "/img/ph_oficina.jpg";
 const PH_SALA = "/img/ph_sala.jpg";
@@ -207,282 +208,40 @@ const WPC_SALA_PHOTOS: Record<string, string> = {
   "wpc-oak": ROOM_WPC_OAK,
   "wpc-ostion": ROOM_WPC_OSTION,
 };
-const PRODUCT_PHOTOS = {
-  "lambrin-wpc": WPC_TV_LISTONES,
-  "marmol-sintetico": PROY_MARMOL_COMEDOR,
-  "persianas": PH_PERSIANA_SCREEN,
-  "pasto-sintetico": PASTO_PATIO_BAR,
-  "palapa-sintetica": PALAPA_SHOWROOM,
-  "tapiceria-exterior": PH_TAPICERIA,
-  "malla-toldos": CORTINA_PLISADA,
-  "muro-verde": PH_MURO_VERDE_TECHO_RESTAURANTE,
-  "panel-pvc": PISO_WPC_COVER_SALA,
-  "paneles-decorativos": PANELES_DECO_COVER,
+/* ============================================================
+   CATÁLOGO — viene de data/catalog.json, que se genera al publicar desde
+   Supabase (scripts/sync-catalog.mjs). Lo edita el dueño en /admin.
+   ============================================================ */
+type CatalogPhoto = { path: string; model: string; caption: string; sort: number };
+type CatalogProduct = {
+  id: string; code: string; name: string; short: string; description: string; cover: string | null;
+  sort: number; price: number | null; price_unit: string; price_mode: string; photos: CatalogPhoto[];
 };
-const PRODUCT_GALLERY = {
-  persianas: [
-    PERSIANA_MADERA_VENTANA,
-    PERSIANA_PASILLO_CRISTAL,
-    PERSIANA_SALA_COJINES,
-    PH_SHEER_ELEGANCE,
-    SHEER_GRIS_INFANTIL,
-    SHEER_AZUL_PASILLO,
-    SHEER_TAUPE_ESQUINA,
-    SHEER_AZUL_TRAGALUZ,
-    PH_VERTICAL_PVC,
-    VPVC_REAL_1,
-    VPVC_REAL_2,
-    VPVC_CAFE,
-    VPVC_HUESO,
-    VPVC_NARANJA,
-    PH_PERSIANA_BLACKOUT,
-    BLACKOUT_CAFE_LADRILLO,
-    BLACKOUT_GRIS_ALBERCA,
-    BLACKOUT_GRIS_LAMPARA,
-    PH_PERSIANA_SCREEN,
-    SCREEN_PALAPA_TERRAZA,
-    SCREEN_VISTA_MAR_1,
-    SCREEN_VISTA_MAR_2,
-    PH_CORTINAS_TELA,
-    CORTINA_SHEER_ARMCHAIRS,
-    TOLDO_VELA_INSTALACION,
-    TOLDO_RETRACTIL_ALBERCA,
-    PERSIANA_ZEBRA_AZUL,
-    PERSIANA_ZEBRA_NEGRA,
-    PERSIANA_ZEBRA_TAUPE,
-    PERSIANA_SHEER_MAR,
-    PERSIANA_SCREEN_EXT,
-  ],
-  "tapiceria-exterior": [PH_TAPICERIA_MESA_LARGA, PH_TAPICERIA_BANCA, PH_TAPICERIA_SOFA_GRIS, TAP_CAMASTROS_AZULES, TAP_SALA_CURVA_AZUL],
-  "pasto-sintetico": [PROY_PASTO_ANDADOR, PROY_PASTO_COLUMPIO, PASTO_PATIO_LADRILLO, PASTO_PALMERAS_PIEDRA, PASTO_ANDADOR_NOCTURNO, PASTO_PATIO_BAR, PASTO_JARDIN_FLORES],
-  "marmol-sintetico": [PROY_MARMOL_ORO, PROY_MARMOL_NEGRO, PROY_MARMOL_COMEDOR],
-  "malla-toldos": [PROY_MALLA_DELFINARIO, CORTINA_ONDULADA, TOLDO_VELA_RESTAURANTE, CORTINA_PLISADA, TOLDO_VERTICAL_JARDIN],
-  "muro-verde": [PROY_MURO_VERDE_LOCAL, PROY_MURO_VERDE_FUENTE, PH_MURO_VERDE_ALTAR, PH_MURO_VERDE_TECHO_RESTAURANTE, PH_MURO_VERDE_MURAL_ALBERCA, MURO_VERDE_RUBENS_RESTAURANTE],
-  "palapa-sintetica": [PALAPA_APEX_ESTRUCTURA, PALAPA_EXTERIOR_REAL, PALAPA_TEXTURA_NATURAL, PALAPA_SHOWROOM, PALAPA_MATERIAL_SINTETICO],
-  "lambrin-wpc": [WPC_MURO_ALBERCA, WPC_PLAFON, WPC_TV_LISTONES, WPC_CABECERA_CAMA, WPC_MURO_MARMOL_BARRA],
-  "panel-pvc": [PISO_WPC_COVER_SALA],
-  "paneles-decorativos": [PANELES_DECO_COVER],
-};
+const CATALOG: CatalogProduct[] = ((catalogData as any).products || []) as CatalogProduct[];
+const PRODUCT_PHOTOS: Record<string, string | null> = Object.fromEntries(CATALOG.map((p) => [p.id, p.cover]));
+const PRODUCT_GALLERY: Record<string, string[]> = Object.fromEntries(CATALOG.map((p) => [p.id, p.photos.map((f) => f.path)]));
+const NAMED_GALLERY: Record<string, string[]> = Object.fromEntries(CATALOG.map((p) => [p.id, p.photos.map((f) => f.caption)]));
+const MODEL_GALLERY: Record<string, string[]> = Object.fromEntries(CATALOG.map((p) => [p.id, p.photos.map((f) => f.model)]));
+const REVESTIMIENTOS = ["lambrin-wpc", "panel-pvc", "marmol-sintetico", "paneles-decorativos"];
 
-/* Nombre de cada "modelo" dentro de la galería de cada producto — se muestra
-   como grid con etiqueta debajo de la foto grande, en la página de cada
-   producto (ver SimpleProductExperience). Un nombre por foto, en el mismo
-   orden que PRODUCT_GALLERY. Si falta un nombre para una foto nueva, se usa
-   el nombre genérico del producto como respaldo. */
-const NAMED_GALLERY = {
-  persianas: [
-    "Madera — ventana con vista al jardín",
-    "Madera — pasillo con balcón",
-    "Madera — sala con cojines",
-    "Sheer Elegance",
-    "Sheer Elegance — recámara infantil",
-    "Sheer Elegance — pasillo azul marino",
-    "Sheer Elegance — instalación",
-    "Sheer Elegance — con tragaluz",
-    "Vertical PVC",
-    "Vertical PVC — instalación real",
-    "Vertical PVC — instalación real",
-    "Vertical PVC — café",
-    "Vertical PVC — hueso",
-    "Vertical PVC — naranja",
-    "Blackout",
-    "Blackout — muro de ladrillo",
-    "Blackout — vista a la alberca",
-    "Blackout — con lámpara colgante",
-    "Screen Malla Solar — terraza con vista al mar",
-    "Screen Malla Solar — terraza palapa",
-    "Screen Malla Solar — vista al mar",
-    "Screen Malla Solar — vista al mar",
-    "Cortina — instalación",
-    "Cortina — ondulada crema",
-    "Cortina — plisada perla",
-    "Cortina — terracota con sheer",
-    "Sheer Elegance — azul",
-    "Sheer Elegance — negra",
-    "Sheer Elegance — taupe",
-    "Screen Malla Solar — vista al mar",
-    "Screen Malla Solar — instalación exterior",
-  ],
-  "tapiceria-exterior": [
-    "Sillas de comedor — cojín turquesa",
-    "Banca de obra — tapizado gris oscuro",
-    "Sala tipo banca — tapizado taupe",
-    "Camastros — cojín azul",
-    "Sala curva — cojín azul",
-  ],
-  "pasto-sintetico": [
-    "Andador con iluminación de piso",
-    "Área de juegos",
-    "Patio con muro de ladrillo",
-    "Palmeras con piedra decorativa",
-    "Andador nocturno con iluminación",
-    "Patio con barra y palapa",
-    "Jardín con seto de flores",
-  ],
-  "marmol-sintetico": [
-    "Muro con veta dorada y repisas",
-    "Área de espera — mármol negro",
-    "Comedor — mármol con lambrín",
-  ],
-  "muro-verde": [
-    "Fachada de local — muro verde con flor",
-    "Patio con fuente y muro verde",
-    "Nicho decorativo con muro verde",
-    "Plafón de restaurante con muro verde y lámparas colgantes",
-    "Alberca con mural y muro verde",
-    "Restaurante — muro verde con letrero de neón",
-  ],
-  "panel-pvc": [
-    "Sala con piso de madera y muro de listones",
-  ],
-  "paneles-decorativos": [
-    "Sala con muro de paneles y luz dorada",
-  ],
-  "palapa-sintetica": [
-    "Estructura — vigas radiales",
-    "Instalación exterior",
-    "Textura interior",
-    "Muestra en showroom",
-    "Material — palma sintética",
-  ],
-  "malla-toldos": [
-    "Malla — delfinario",
-    "Instalación de vela de sombra",
-    "Vela de sombra — restaurante",
-    "Toldo retráctil — alberca",
-    "Toldo vertical — jardín",
-  ],
-  "lambrin-wpc": [
-    "Muro exterior — junto a alberca",
-    "Plafón exterior — vigas WPC",
-    "Muro TV — listones de madera",
-    "Cabecera de cama",
-    "Muro con barra de mármol",
-  ],
-};
+const UNIT_LABEL: Record<string, string> = { m2: "m²", ml: "metro lineal", pieza: "pieza" };
+/* "Desde $1,250 / m²" · "$980 / pieza" · null si es "a cotizar" o no tiene precio */
+function formatPrice(p: any): string | null {
+  if (!p || p.price === null || p.price === undefined || p.price_unit === "cotizar") return null;
+  const n = Number(p.price).toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 2, minimumFractionDigits: 0 });
+  return `${p.price_mode === "desde" ? "Desde " : ""}${n} / ${UNIT_LABEL[p.price_unit] || p.price_unit}`;
+}
 
 /* ============================================================
    DEMO_DATA — capa de datos ficticios (sustituible por Supabase)
    ============================================================ */
 const DEMO_DATA = {
-  products: [
-    {
-      id: "lambrin-wpc",
-      code: "WPC",
-      name: "Lambrín WPC",
-      short: "Madera técnica de alto desempeño para muros y plafones interiores.",
-      description:
-        "Un revestimiento de listones que reproduce la calidez de la madera maciza con la estabilidad de un composite. Ideal para acentos de muro, plafones y proyectos donde el material debe verse — y sentirse — como madera real.",
-      family: "wood",
-      catalogGroup: "revestimientos",
-      featured: true,
-    },
-    {
-      id: "panel-pvc",
-      code: "PVC",
-      name: "Piso WPC",
-      short: "Paneles ligeros con acabado tipo madera, listos para instalación rápida.",
-      description:
-        "Paneles de instalación limpia pensados para remodelaciones ágiles. Reproducen vetas de madera clara con un acabado uniforme, ideal para desarrollos residenciales y comerciales con tiempos de entrega ajustados.",
-      family: "wood-light",
-      catalogGroup: "revestimientos",
-      featured: true,
-    },
-    {
-      id: "marmol-sintetico",
-      code: "MS",
-      name: "Mármol Sintético",
-      short: "La presencia del mármol, sin las limitaciones de la piedra natural.",
-      description:
-        "Superficies de gran formato con vetas continuas inspiradas en mármoles clásicos. Pensadas para muros protagonistas: recepciones, baños principales y proyectos donde el material es el punto focal.",
-      family: "marble",
-      catalogGroup: "revestimientos",
-      featured: true,
-    },
-    {
-      id: "paneles-decorativos",
-      code: "PD",
-      name: "Paneles Decorativos",
-      short: "Lambrín de acabado liso — la calidez de la madera en superficie uniforme.",
-      description:
-        "La misma familia de Lambrín, en acabado liso: superficie plana y uniforme, sin relieve. Ideal para quienes buscan la calidez de la madera con una terminación más minimalista y fácil de limpiar.",
-      family: "wood-smooth",
-      catalogGroup: "revestimientos",
-      featured: true,
-    },
-    {
-      id: "persianas",
-      code: "PER",
-      name: "Persianas",
-      short: "Persianas enrollables, de madera y doble tejido a la medida.",
-      description:
-        "Persianas a la medida para cada espacio: enrollables tipo día y noche, de madera natural y doble tejido (screen), con instalación incluida. Ideales para controlar luz y privacidad sin perder estilo.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-    {
-      id: "pasto-sintetico",
-      code: "PS",
-      name: "Pasto Sintético",
-      short: "Áreas verdes de bajo mantenimiento para patios, terrazas y jardines.",
-      description:
-        "Pasto sintético premium para exteriores e interiores: menos consumo de agua, sin mantenimiento constante y con apariencia natural. Ideal para patios, áreas infantiles y espacios comerciales.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-    {
-      id: "palapa-sintetica",
-      code: "PAL",
-      name: "Techos de Palapa",
-      short: "Techos de palapa sintética, resistentes al clima costero.",
-      description:
-        "Techos de palapa sintética para albercas, terrazas y restaurantes: la apariencia natural de la palapa tradicional, sin el mantenimiento ni el deterioro por humedad y sol.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-    {
-      id: "tapiceria-exterior",
-      code: "TAP",
-      name: "Tapicería de Exterior",
-      short: "Cojines y tapices para muebles de exterior, resistentes a la intemperie.",
-      description:
-        "Tapicería especializada para muebles de exterior — telas resistentes al sol, la humedad y el uso constante. Renueva salas, camastros y equipales sin cambiar el mueble.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-    {
-      id: "malla-toldos",
-      code: "MSO",
-      name: "Malla Sombra y Toldos",
-      short: "Malla sombra, toldos retráctiles y de caída vertical, a la medida.",
-      description:
-        "Soluciones de sombra a la medida en tres formatos: malla sombra tensada para albercas, terrazas y estacionamientos; toldos retráctiles para áreas de sombra variable; y toldos de caída vertical para cerrar y proteger espacios abiertos del sol y la lluvia. Instalación con anclajes resistentes al viento costero.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-    {
-      id: "muro-verde",
-      code: "MVE",
-      name: "Muro Verde",
-      short: "Muros verdes artificiales de bajo mantenimiento para interior y exterior.",
-      description:
-        "Muros verdes con follaje artificial de alta densidad — dan calidez y textura natural a plafones, muros y áreas de estar sin el mantenimiento de una planta real. Resistentes a sol y humedad.",
-      family: "simple",
-      simple: true,
-      catalogGroup: "exterior",
-      featured: true,
-    },
-  ],
+  products: CATALOG.map((p) => ({
+    id: p.id, code: p.code, name: p.name, short: p.short, description: p.description,
+    price: p.price, price_unit: p.price_unit, price_mode: p.price_mode,
+    family: REVESTIMIENTOS.includes(p.id) ? "wood" : "simple", simple: !REVESTIMIENTOS.includes(p.id),
+    catalogGroup: REVESTIMIENTOS.includes(p.id) ? "revestimientos" : "exterior", featured: true,
+  })),
 
   finishes: [
     // Lambrín WPC — fotografía real de muestrario
@@ -1497,12 +1256,12 @@ function AutoPhotoCarousel({ photos, alt, onExpand }: any) {
    guión largo (—) como clave (ej. "Sheer Elegance — pasillo azul marino"
    y "Sheer Elegance — instalación" caen en el mismo grupo "Sheer Elegance").
    Nombres sin guión forman su propio grupo con una sola foto. */
-function groupGalleryByModel(gallery: any[], names: string[]) {
+function groupGalleryByModel(gallery: any[], names: string[], models: string[] = []) {
   const groups: any[] = [];
   const index: Record<string, number> = {};
   gallery.forEach((photo, i) => {
     const fullName = names[i] || "";
-    const key = fullName.split(" — ")[0].trim() || fullName;
+    const key = (models[i] || "").trim() || fullName.split(" — ")[0].trim() || fullName || "Trabajos";
     if (index[key] === undefined) {
       index[key] = groups.length;
       groups.push({ key, photos: [photo], captions: [fullName] });
@@ -1679,7 +1438,7 @@ function PhotoLightbox({ items, index, onIndex, onClose, groupNoun = "modelo" }:
    que recorre el visor — portada incluida si no está ya en la galería. */
 function productLightboxItems(product: any) {
   const cover = PRODUCT_PHOTOS[product.id];
-  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || []);
+  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || [], MODEL_GALLERY[product.id] || []);
   const items: any[] = [];
   groups.forEach((g: any) => g.photos.forEach((src: string, j: number) => items.push({ src, group: g.key || product.name, caption: g.captions[j] })));
   if (cover && !items.some((it) => it.src === cover)) items.unshift({ src: cover, group: product.name });
@@ -1690,7 +1449,7 @@ function ProductPage({ product, onBack, onQuote }: any) {
   const items = useMemo(() => productLightboxItems(product), [product]);
   const cover = PRODUCT_PHOTOS[product.id];
   const carouselPhotos = Array.from(new Set([cover, ...items.map((it: any) => it.src)].filter(Boolean)));
-  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || []);
+  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || [], MODEL_GALLERY[product.id] || []);
   const [lb, setLb] = useState<number | null>(null);
   const openBySrc = (src: string) => { const k = items.findIndex((it: any) => it.src === src); setLb(k >= 0 ? k : 0); };
   return (
@@ -1715,6 +1474,15 @@ function ProductPage({ product, onBack, onQuote }: any) {
             {carouselPhotos.length > 0 && <AutoPhotoCarousel photos={carouselPhotos} alt={product.name} onExpand={openBySrc} />}
           </div>
           <div className="lg:col-span-2 flex flex-col justify-center gap-6">
+            {formatPrice(product) && (
+              <div>
+                <p className="font-display" style={{ fontSize: "clamp(1.6rem, 3vw, 2.1rem)", color: C.cream }}>{formatPrice(product)}</p>
+                <p className="text-xs mt-1" style={{ color: C.creamDim, opacity: 0.7 }}>Precio de referencia. El total depende de las medidas y la instalación.</p>
+              </div>
+            )}
+            {product.description && (
+              <p className="text-sm md:text-base leading-relaxed whitespace-pre-line" style={{ color: C.creamDim }}>{product.description}</p>
+            )}
             <p className="text-sm" style={{ color: C.creamDim }}>
               Cuéntanos las medidas de tu espacio y te cotizamos por WhatsApp.
             </p>
