@@ -1,0 +1,26 @@
+name: Keep Supabase alive
+
+on:
+  schedule:
+    - cron: "17 15 */3 * *"   # cada 3 días, 9:17 am hora de Zihuatanejo
+  workflow_dispatch:           # botón "Run workflow" para probar a mano
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping a la tabla leads
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Faltan los secrets SUPABASE_URL o SUPABASE_ANON_KEY"; exit 1
+          fi
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            "$SUPABASE_URL/rest/v1/leads?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Respuesta de Supabase: $code"
+          # Si no responde 200, el job falla y GitHub te manda correo: señal de que el proyecto se pausó
+          [ "$code" = "200" ]
