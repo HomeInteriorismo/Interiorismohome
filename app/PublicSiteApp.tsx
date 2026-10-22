@@ -1825,9 +1825,9 @@ function QuoteSection({ prefill, onSubmit }: any) {
         status: "Nuevo",
         origen: "Sitio web",
       });
-      if (insertError) console.error("Supabase rechazó el prospecto:", insertError);
-    } catch (err) {
-      console.error("No se pudo guardar el prospecto en Supabase:", err);
+      if (insertError) console.warn("No se pudo registrar la cotización (se envió por WhatsApp).");
+    } catch {
+      console.warn("No se pudo registrar la cotización (se envió por WhatsApp).");
     }
     setSent(true);
   };
