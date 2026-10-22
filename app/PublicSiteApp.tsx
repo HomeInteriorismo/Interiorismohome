@@ -25,12 +25,7 @@ const PVC_BERLIN = "/img/pvc_berlin.jpg";
 const PVC_MADRID = "/img/pvc_madrid.jpg";
 const MS_CALACATTA_REAL = "/img/ms_calacatta_real.jpg";
 const LOGO_HI = "/img/logo_hi.jpg";
-const PH_PASTO = "/img/ph_pasto.jpg";
-const PH_PALAPA = "/img/ph_palapa.jpg";
 const PH_TAPICERIA = "/img/ph_tapiceria.jpg";
-const PH_MARMOL_DINING = "/img/ph_marmol_dining.jpg";
-const PH_PERSIANA_TERRAZA = "/img/ph_persiana_terraza.jpg";
-const PH_LAMBRIN_COVER = "/img/ph_lambrin_cover.jpg";
 
 /* ============================================================
    DEMO_CONFIG — reemplazar por datos reales del cliente
@@ -42,10 +37,13 @@ const DEMO_CONFIG = {
   facebookUrl: "https://www.facebook.com/share/1Bhm6eSPbs/?mibextid=wwXIfr",
 };
 
-const HERO_VIDEOS: string[] = [
-  "/videos/hero1.mp4",
-  "/videos/hero2.mp4",
-  "/videos/hero3.mp4",
+/* Videos del Hero: viven dentro del propio sitio (public/videos), ya no en Supabase,
+   así que no dependen de ningún servicio externo. Cada uno trae su foto de portada:
+   si el navegador bloquea la reproducción (iPhone en bajo consumo) o el video falla,
+   se queda la portada y la página nunca se ve vacía. */
+const HERO_VIDEOS = [
+  { src: "/videos/hero1.mp4", poster: "/videos/hero1.jpg" },
+  { src: "/videos/hero2.mp4", poster: "/videos/hero2.jpg" },
 ];
 
 /* ============================================================
@@ -97,20 +95,13 @@ const PROY_MARMOL_NEGRO = "/img/proy_marmol_negro.jpg";
 const PROY_MARMOL_COMEDOR = "/img/proy_marmol_comedor.jpg";
 const PROY_PASTO_ANDADOR = "/img/proy_pasto_andador.jpg";
 const PROY_PASTO_COLUMPIO = "/img/proy_pasto_columpio.jpg";
-const PROY_LAMBRIN_TV = "/img/proy_lambrin_tv.jpg";
-const PROY_LAMBRIN_REALESTATE = "/img/proy_lambrin_realestate.jpg";
-const PROY_LAMBRIN_DESPACHO = "/img/proy_lambrin_despacho.jpg";
-const PROY_LAMBRIN_PASILLO = "/img/proy_lambrin_pasillo.jpg";
 const PROY_LAMBRIN_RECEPCION = "/img/proy_lambrin_recepcion.jpg";
 const PROY_LAMBRIN_PUERTA = "/img/proy_lambrin_puerta.jpg";
 const PROY_LAMBRIN_ALBERCA = "/img/proy_lambrin_alberca.jpg";
-const PROY_CORTINA_SHEER_BLACKOUT = "/img/proy_cortina_sheer_blackout.jpg";
-const PROY_CORTINA_SALA_GRIS = "/img/proy_cortina_sala_gris.jpg";
 const PROY_MALLA_DELFINARIO = "/img/proy_malla_delfinario.jpg";
 const PROY_MURO_VERDE_LOCAL = "/img/proy_muro_verde_local.jpg";
 const PROY_MURO_VERDE_FUENTE = "/img/proy_muro_verde_fuente.jpg";
 const PROY_LAMBRIN_PLAYA = "/img/proy_lambrin_playa.jpg";
-const PH_MURO_VERDE = "/img/ph_muro_verde.jpg";
 const PH_CORTINAS_TELA = "/img/ph_cortinas_tela.jpg";
 const PH_SHEER_ELEGANCE = "/img/ph_sheer_elegance.jpg";
 const PASTO_PATIO_BAR = "/img/pasto_patio_bar.jpg";
@@ -158,7 +149,6 @@ const PALAPA_APEX_ESTRUCTURA = "/img/palapa_apex_estructura.jpg";
 const PALAPA_EXTERIOR_REAL = "/img/palapa_exterior_real.jpg";
 const PERSIANA_MADERA_VENTANA = "/img/persiana_madera_ventana.jpg";
 const PERSIANA_PASILLO_CRISTAL = "/img/persiana_pasillo_cristal.jpg";
-const PH_PERSIANA_MADERA_COCINA = "/img/ph_persiana_madera_cocina.jpg";
 const PH_MURO_VERDE_ALTAR = "/img/ph_muro_verde_altar.jpg";
 const PH_MURO_VERDE_TECHO_RESTAURANTE = "/img/ph_muro_verde_techo_restaurante.jpg";
 const PH_TAPICERIA_MESA_LARGA = "/img/ph_tapiceria_mesa_larga.jpg";
@@ -218,20 +208,19 @@ const WPC_SALA_PHOTOS: Record<string, string> = {
   "wpc-ostion": ROOM_WPC_OSTION,
 };
 const PRODUCT_PHOTOS = {
-  "lambrin-wpc": PH_LAMBRIN_COVER,
-  "marmol-sintetico": PH_MARMOL_DINING,
-  "persianas": PH_PERSIANA_TERRAZA,
-  "pasto-sintetico": PH_PASTO,
-  "palapa-sintetica": PH_PALAPA,
+  "lambrin-wpc": WPC_TV_LISTONES,
+  "marmol-sintetico": PROY_MARMOL_COMEDOR,
+  "persianas": PH_PERSIANA_SCREEN,
+  "pasto-sintetico": PASTO_PATIO_BAR,
+  "palapa-sintetica": PALAPA_SHOWROOM,
   "tapiceria-exterior": PH_TAPICERIA,
   "malla-toldos": CORTINA_PLISADA,
-  "muro-verde": PH_MURO_VERDE,
+  "muro-verde": PH_MURO_VERDE_TECHO_RESTAURANTE,
   "panel-pvc": PISO_WPC_COVER_SALA,
   "paneles-decorativos": PANELES_DECO_COVER,
 };
 const PRODUCT_GALLERY = {
   persianas: [
-    PH_PERSIANA_MADERA_COCINA,
     PERSIANA_MADERA_VENTANA,
     PERSIANA_PASILLO_CRISTAL,
     PERSIANA_SALA_COJINES,
@@ -263,8 +252,6 @@ const PRODUCT_GALLERY = {
     PERSIANA_ZEBRA_TAUPE,
     PERSIANA_SHEER_MAR,
     PERSIANA_SCREEN_EXT,
-    PROY_CORTINA_SHEER_BLACKOUT,
-    PROY_CORTINA_SALA_GRIS,
   ],
   "tapiceria-exterior": [PH_TAPICERIA_MESA_LARGA, PH_TAPICERIA_BANCA, PH_TAPICERIA_SOFA_GRIS, TAP_CAMASTROS_AZULES, TAP_SALA_CURVA_AZUL],
   "pasto-sintetico": [PROY_PASTO_ANDADOR, PROY_PASTO_COLUMPIO, PASTO_PATIO_LADRILLO, PASTO_PALMERAS_PIEDRA, PASTO_ANDADOR_NOCTURNO, PASTO_PATIO_BAR, PASTO_JARDIN_FLORES],
@@ -284,7 +271,6 @@ const PRODUCT_GALLERY = {
    el nombre genérico del producto como respaldo. */
 const NAMED_GALLERY = {
   persianas: [
-    "Madera — cocina rústica",
     "Madera — ventana con vista al jardín",
     "Madera — pasillo con balcón",
     "Madera — sala con cojines",
@@ -316,8 +302,6 @@ const NAMED_GALLERY = {
     "Sheer Elegance — taupe",
     "Screen Malla Solar — vista al mar",
     "Screen Malla Solar — instalación exterior",
-    "Cortina — sheer y blackout combinados",
-    "Cortina — sala gris",
   ],
   "tapiceria-exterior": [
     "Sillas de comedor — cojín turquesa",
@@ -547,52 +531,6 @@ const DEMO_DATA = {
     { id: "recepcion", name: "Recepción", icon: "recepcion" },
     { id: "otro", name: "Otro espacio", icon: "otro" },
   ],
-
-  leads: [
-    { id: "L-1042", name: "Marisol Cabrera", whatsapp: "7551122334", product: "Lambrín WPC", finish: "Parota Black", space: "Sala", medidas: "4.20 x 2.70 m", status: "Nuevo", date: "2026-08-09", origen: "Sitio web" },
-    { id: "L-1041", name: "Iván Delgado", whatsapp: "7449988776", product: "Mármol Sintético", finish: "Nero Marquina", space: "Recepción", medidas: "3.00 x 2.40 m", status: "Contactado", date: "2026-08-08", origen: "Sitio web" },
-    { id: "L-1040", name: "Renata Solís", whatsapp: "7558812233", product: "Paneles PVC", finish: "Roble Claro", space: "Oficina", medidas: "—", status: "Cotización enviada", date: "2026-08-07", origen: "Sitio web" },
-    { id: "L-1039", name: "Grupo Costa Interiorismo", whatsapp: "7551239900", product: "Paneles Decorativos", finish: "Relieve Geométrico", space: "Restaurante", medidas: "12.0 x 2.9 m", status: "Seguimiento", date: "2026-08-05", origen: "Referido" },
-    { id: "L-1038", name: "Paola Nieves", whatsapp: "7443321155", product: "Lambrín WPC", finish: "Roble", space: "Recámara", medidas: "3.5 x 2.6 m", status: "Ganado", date: "2026-08-01", origen: "Sitio web" },
-  ],
-
-  clients: [
-    { id: "C-201", name: "Paola Nieves", whatsapp: "7443321155", proyecto: "Recámara principal — Lambrín WPC Roble", status: "En instalación", lastContact: "2026-08-10" },
-    { id: "C-200", name: "Hotel Punta Diamante", whatsapp: "7550091122", proyecto: "Lobby — Mármol Sintético Calacatta", status: "Completado", lastContact: "2026-07-22" },
-  ],
-
-  appointments: [
-    { id: "A-51", cliente: "Marisol Cabrera", fecha: "2026-08-12", hora: "10:00", tipo: "Visita técnica", lugar: "Col. Coral, Zihuatanejo", estado: "Confirmada" },
-    { id: "A-50", cliente: "Grupo Costa Interiorismo", fecha: "2026-08-13", hora: "17:30", tipo: "Presentación de muestras", lugar: "Showroom", estado: "Pendiente" },
-    { id: "A-49", cliente: "Iván Delgado", fecha: "2026-08-15", hora: "12:00", tipo: "Medición", lugar: "Ixtapa, Zona Hotelera", estado: "Pendiente" },
-  ],
-
-  // Precios de referencia (DEMO) — pendientes de lista de precios real del cliente
-  projects: [
-    { id: "PRY-01", title: "Recepción — Hotel Punta Diamante", client: "Hotel Punta Diamante", product: "Mármol Sintético", status: "Completado", date: "2026-07-15" },
-    { id: "PRY-02", title: "Recámara principal — Paola Nieves", client: "Paola Nieves", product: "Lambrín WPC", status: "En instalación", date: "2026-08-05" },
-    { id: "PRY-03", title: "Terraza — Grupo Costa Interiorismo", client: "Grupo Costa Interiorismo", product: "Techos de Palapa", status: "Agendado", date: "2026-08-13" },
-    { id: "PRY-04", title: "Oficina — Renata Solís", client: "Renata Solís", product: "Paneles PVC", status: "Cotización", date: "2026-08-07" },
-  ],
-
-  quotes: [
-    {
-      id: "COT-2031", client: "Iván Delgado", whatsapp: "7449988776", product: "Mármol Sintético", finish: "Nero Marquina", space: "Recepción",
-      items: [{ id: 1, concepto: "Suministro e instalación — muro principal", m2: 7.2, precioM2: 2450 }],
-      status: "Enviada", date: "2026-08-08",
-    },
-    {
-      id: "COT-2030", client: "Renata Solís", whatsapp: "7558812233", product: "Paneles PVC", finish: "Roble Claro", space: "Oficina",
-      items: [{ id: 1, concepto: "Suministro e instalación", m2: 9.5, precioM2: 980 }],
-      status: "Borrador", date: "2026-08-07",
-    },
-    {
-      id: "COT-2029", client: "Paola Nieves", whatsapp: "7443321155", product: "Lambrín WPC", finish: "Roble", space: "Recámara",
-      items: [{ id: 1, concepto: "Suministro e instalación", m2: 9.1, precioM2: 1450 }],
-      status: "Aceptada", date: "2026-08-01",
-    },
-  ],
-
 };
 
 /* ============================================================
@@ -703,7 +641,7 @@ function useProductData() {
    APP RAÍZ — separa SITIO PÚBLICO / ADMIN
    ============================================================ */
 export default function PublicSiteApp() {
-  const [leads, setLeads] = useState(DEMO_DATA.leads);
+  const [leads, setLeads] = useState<any[]>([]);
   const [products, setProducts] = useState(DEMO_DATA.products);
   const [finishes, setFinishes] = useState(DEMO_DATA.finishes);
 
@@ -714,7 +652,6 @@ export default function PublicSiteApp() {
   return (
     <div style={{ fontFamily: "'Inter', sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: `
-        ${FONT_IMPORT}
         * { box-sizing: border-box; }
         .font-display { font-family: 'Fraunces', serif; }
         ::selection { background: ${C.copper}; color: ${C.carbon}; }
@@ -738,19 +675,54 @@ export default function PublicSiteApp() {
    ============  SITIO PÚBLICO  ================================
    ============================================================ */
 function PublicSite({ onGoAdmin, leads, setLeads }: any) {
+  const { products } = useProductData();
   const [mobileNav, setMobileNav] = useState(false);
-  const [activeProduct, setActiveProduct] = useState(null); // product experience overlay
+  const [activeProduct, setActiveProduct] = useState<any>(null); // página de producto
   const [quotePrefill, setQuotePrefill] = useState(null);
-  const quoteRef = useRef(null);
+  const savedScroll = useRef(0);
+
+  /* Cada producto tiene su propia dirección (#persianas, #lambrin-wpc…): así el botón
+     "atrás" del celular regresa al catálogo en vez de salirse del sitio, y el link
+     de un producto se puede compartir por WhatsApp. */
+  useEffect(() => {
+    const sync = () => {
+      const id = decodeURIComponent(window.location.hash.replace("#", ""));
+      const p = products.find((x: any) => x.id === id) || null;
+      setActiveProduct(p);
+      if (p) window.scrollTo(0, 0);
+      else setTimeout(() => window.scrollTo(0, savedScroll.current), 0);
+    };
+    sync();
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, [products]);
+
+  const openProduct = (p: any) => {
+    savedScroll.current = window.scrollY;
+    window.history.pushState({ product: p.id }, "", `#${p.id}`);
+    setActiveProduct(p);
+    window.scrollTo(0, 0);
+  };
+  const leaveProductUrl = () => {
+    if (window.location.hash) window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  };
+  const closeProduct = () => {
+    if (window.history.state && window.history.state.product) { window.history.back(); return; }
+    leaveProductUrl();
+    setActiveProduct(null);
+    setTimeout(() => window.scrollTo(0, savedScroll.current), 0);
+  };
 
   const scrollTo = (id) => {
     setMobileNav(false);
+    leaveProductUrl();
     setActiveProduct(null);
     setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 30);
   };
 
   const openQuote = (prefill) => {
     setQuotePrefill(prefill || null);
+    leaveProductUrl();
     setActiveProduct(null);
     setTimeout(() => document.getElementById("cotizador")?.scrollIntoView({ behavior: "smooth" }), 30);
   };
@@ -758,19 +730,7 @@ function PublicSite({ onGoAdmin, leads, setLeads }: any) {
   const addLead = (lead) => setLeads((prev) => [lead, ...prev]);
 
   if (activeProduct) {
-    return activeProduct.simple ? (
-      <SimpleProductExperience
-        product={activeProduct}
-        onBack={() => setActiveProduct(null)}
-        onQuote={openQuote}
-      />
-    ) : (
-      <ProductExperience
-        product={activeProduct}
-        onBack={() => setActiveProduct(null)}
-        onQuote={openQuote}
-      />
-    );
+    return <ProductPage product={activeProduct} onBack={closeProduct} onQuote={openQuote} />;
   }
 
   return (
@@ -779,11 +739,11 @@ function PublicSite({ onGoAdmin, leads, setLeads }: any) {
 
       <Hero onNav={scrollTo} />
 
-      <FeaturedSection onSelect={setActiveProduct} />
+      <FeaturedSection onSelect={openProduct} />
 
-      <VisualizadorEspacioSection onNav={scrollTo} />
+      <VisualizadorEspacioSection onSelect={openProduct} />
 
-      <GaleriaMaterialesSection onSelect={setActiveProduct} />
+      <GaleriaMaterialesSection onSelect={openProduct} />
 
       <ProjectsStrip />
 
@@ -798,15 +758,17 @@ function PublicSite({ onGoAdmin, leads, setLeads }: any) {
   );
 }
 
+const NAV_LINKS = [
+  ["inicio", "Inicio"],
+  ["materiales", "Catálogo"],
+  ["proyectos", "Proyectos"],
+  ["antes-despues", "Antes y después"],
+  ["aplicaciones", "Lambrín en tu espacio"],
+  ["cotizador", "Cotizar"],
+];
+
 function PublicNav({ onNav, mobileNav, setMobileNav, onGoAdmin }: any) {
-  const links = [
-    ["inicio", "Inicio"],
-    ["materiales", "Materiales"],
-    ["configurador", "Acabados"],
-    ["aplicaciones", "Aplicaciones"],
-    ["proyectos", "Proyectos"],
-    ["cotizador", "Contacto"],
-  ];
+  const links = NAV_LINKS;
   return (
     <header
       style={{ borderBottom: `1px solid ${C.line}`, position: "sticky", top: 0, zIndex: 40, backdropFilter: "blur(10px)" }}
@@ -827,7 +789,7 @@ function PublicNav({ onNav, mobileNav, setMobileNav, onGoAdmin }: any) {
         <div className="hidden lg:flex items-center gap-3">
           <a
             href={buildWaLink({})}
-            target="_blank" rel="noreferrer"
+            target="_blank" rel="noopener noreferrer"
             className="flex items-center gap-2 text-sm px-4 py-2 rounded-full"
             style={{ background: C.copper, color: C.carbon, fontWeight: 600 }}
           >
@@ -847,7 +809,7 @@ function PublicNav({ onNav, mobileNav, setMobileNav, onGoAdmin }: any) {
               {label}
             </button>
           ))}
-          <a href={buildWaLink({})} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-full mt-2" style={{ background: C.copper, color: C.carbon, fontWeight: 600 }}>
+          <a href={buildWaLink({})} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 text-sm px-4 py-3 rounded-full mt-2" style={{ background: C.copper, color: C.carbon, fontWeight: 600 }}>
             <MessageCircle size={16} /> Cotizar por WhatsApp
           </a>
         </div>
@@ -867,27 +829,38 @@ function HeroVideoBackground() {
     // iOS (modo bajo consumo / Safari) bloquea el autoplay: arrancar al primer toque o scroll
     const once = () => { tryPlay(); cleanup(); };
     const evs = ["touchstart", "click", "scroll", "pointerdown"];
+    // al volver a la pestaña (o desbloquear el celular) el navegador puede haberlos pausado
+    const onVisible = () => { if (document.visibilityState === "visible") tryPlay(); };
     const cleanup = () => evs.forEach((e) => window.removeEventListener(e, once));
     evs.forEach((e) => window.addEventListener(e, once, { passive: true }));
-    return cleanup;
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { cleanup(); document.removeEventListener("visibilitychange", onVisible); };
   }, []);
   return (
-    <div ref={wrapRef} className="absolute inset-0 grid grid-cols-2 md:grid-cols-3 gap-0.5">
+    <div ref={wrapRef} className="absolute inset-0 grid grid-cols-2 gap-0.5" aria-hidden="true">
       <style dangerouslySetInnerHTML={{ __html: HERO_VIDEO_CSS }} />
-      {HERO_VIDEOS.map((url, i) => (
-        <div key={url} className={`relative overflow-hidden ${i === 0 ? "col-span-2 md:col-span-1" : ""}`}>
+      {HERO_VIDEOS.map((v) => (
+        <div key={v.src} className="relative overflow-hidden" style={{ backgroundImage: `url(${v.poster})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <video
             className="hero-video absolute inset-0 w-full h-full object-cover"
-            src={url}
-            poster={PH_HERO}
+            poster={v.poster}
             autoPlay
             muted
             loop
             playsInline
             preload="auto"
+            disablePictureInPicture
             onLoadedData={(e: any) => { try { const p = e.currentTarget.play(); if (p && p.catch) p.catch(() => {}); } catch {} }}
-            onError={(e: any) => { try { e.currentTarget.removeAttribute("src"); e.currentTarget.load(); } catch {} }}
-          />
+          >
+            {/* MP4 (iPhone, Safari, Chrome) y WebM de respaldo; si ninguno carga, se oculta el
+                video y queda la foto de portada del recuadro */}
+            <source src={v.src} type="video/mp4" />
+            <source
+              src={v.src.replace(/\.mp4$/, ".webm")}
+              type="video/webm"
+              onError={(e: any) => { try { (e.currentTarget.parentElement as HTMLVideoElement).style.display = "none"; } catch {} }}
+            />
+          </video>
         </div>
       ))}
     </div>
@@ -901,12 +874,12 @@ function Hero({ onNav }: any) {
       <div className="absolute inset-0" style={{ background: `linear-gradient(100deg, ${C.carbon} 0%, rgba(15,13,11,0.88) 30%, rgba(15,13,11,0.55) 58%, rgba(15,13,11,0.25) 100%)` }} />
       <div className="absolute inset-0" style={{ background: `linear-gradient(0deg, ${C.carbon} 0%, transparent 30%)` }} />
       <div className="relative max-w-7xl mx-auto px-5 md:px-10 pt-28 md:pt-32 pb-24 flex flex-col" style={{ minHeight: "88vh" }}>
-        <p className="text-xs md:text-sm tracking-[0.3em]" style={{ color: C.copper }}>REVESTIMIENTOS PARA ARQUITECTURA E INTERIORISMO</p>
+        <p className="text-xs md:text-sm tracking-[0.3em]" style={{ color: C.copper }}>INTERIORISMO Y EXTERIORES · {DEMO_CONFIG.city.toUpperCase()}</p>
         <h1 className="font-display mt-6" style={{ fontSize: "clamp(3rem, 8vw, 6.4rem)", lineHeight: 0.98, color: C.cream, fontWeight: 500 }}>
           Transforma<br />tu espacio.
         </h1>
         <p className="mt-8 max-w-md text-base md:text-lg" style={{ color: C.creamDim }}>
-          Revestimientos decorativos que transforman paredes y espacios — lambrín WPC, paneles PVC, mármol sintético y acabados con relieve.
+          Lambrín WPC, mármol sintético, persianas, pasto sintético, toldos, muro verde y palapa. Suministro e instalación a la medida.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <button onClick={() => onNav("materiales")} className="px-6 py-3.5 rounded-full text-sm font-semibold flex items-center gap-2" style={{ background: C.cream, color: C.carbon }}>
@@ -915,12 +888,9 @@ function Hero({ onNav }: any) {
           <button onClick={() => onNav("proyectos")} className="px-6 py-3.5 rounded-full text-sm font-semibold border flex items-center gap-2" style={{ borderColor: C.lineStrong, color: C.cream }}>
             Ver proyectos
           </button>
-          <a href={buildWaLink({})} target="_blank" rel="noreferrer" className="px-6 py-3.5 rounded-full text-sm font-semibold flex items-center gap-2" style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}>
+          <a href={buildWaLink({})} target="_blank" rel="noopener noreferrer" className="px-6 py-3.5 rounded-full text-sm font-semibold flex items-center gap-2" style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}>
             <MessageCircle size={16} /> Cotizar por WhatsApp
           </a>
-        </div>
-        <div className="mt-auto pt-16 hidden lg:flex items-center gap-8 text-xs" style={{ color: C.creamDim, opacity: 0.6 }}>
-          <span>{DEMO_CONFIG.city}</span>
         </div>
       </div>
     </section>
@@ -990,9 +960,6 @@ function FeaturedProductCard({ p, onSelect }: any) {
           />
         ))}
         <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, rgba(15,13,11,0.7), transparent 55%)" }} />
-        <span className="absolute top-3 left-3 text-[10px] tracking-[0.15em] px-2.5 py-1 rounded-full" style={{ background: "rgba(15,13,11,0.55)", color: C.cream }}>
-          {p.code}
-        </span>
         {photos.length > 1 && (
           <span
             role="button"
@@ -1032,8 +999,9 @@ function FeaturedSection({ onSelect }: any) {
 }
 
 /* ---------- Visualízalo en tu espacio (fotos reales por acabado de Lambrín WPC) ---------- */
-function VisualizadorEspacioSection({ onNav }: any) {
-  const { finishes: allFinishes } = useProductData();
+function VisualizadorEspacioSection({ onSelect }: any) {
+  const { finishes: allFinishes, products } = useProductData();
+  const lambrin = products.find((p: any) => p.id === "lambrin-wpc");
   const wpcFinishes = allFinishes.filter((f) => f.productId === "lambrin-wpc" && WPC_SALA_PHOTOS[f.id]);
   const [finishId, setFinishId] = useState(wpcFinishes[0]?.id || "");
   const finish = wpcFinishes.find((f) => f.id === finishId) || wpcFinishes[0];
@@ -1087,16 +1055,18 @@ function VisualizadorEspacioSection({ onNav }: any) {
           </div>
 
           <div className="pt-2 flex flex-col gap-3">
-            <button
-              onClick={() => onNav("configurador")}
-              className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold"
-              style={{ background: C.copper, color: C.carbon }}
-            >
-              Personalízalo en el configurador
-            </button>
+            {lambrin && (
+              <button
+                onClick={() => onSelect(lambrin)}
+                className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold"
+                style={{ background: C.copper, color: C.carbon }}
+              >
+                Ver trabajos de Lambrín WPC
+              </button>
+            )}
             <a
               href={buildWaLink({ product: "Lambrín WPC", finish: finish.name, space: "Sala" })}
-              target="_blank" rel="noreferrer"
+              target="_blank" rel="noopener noreferrer"
               className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2"
               style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}
             >
@@ -1105,7 +1075,7 @@ function VisualizadorEspacioSection({ onNav }: any) {
           </div>
         </div>
       </div>
-      {lightbox && <PhotoLightbox src={lightbox} onClose={() => setLightbox(null)} />}
+      {lightbox && <PhotoLightbox items={[{ src: lightbox, group: `Lambrín WPC — ${finish.name}` }]} index={0} onIndex={() => {}} onClose={() => setLightbox(null)} />}
     </section>
   );
 }
@@ -1115,7 +1085,6 @@ function VisualizadorEspacioSection({ onNav }: any) {
 function GaleriaMaterialesSection({ onSelect }: any) {
   const { products } = useProductData();
   const [cat, setCat] = useState("todos");
-  const [i, setI] = useState(0);
 
   const cats = [
     { id: "todos", label: "Todos" },
@@ -1128,13 +1097,10 @@ function GaleriaMaterialesSection({ onSelect }: any) {
   ];
 
   const shots = [
-    { cat: "lambrin", photo: PROY_LAMBRIN_RECEPCION, title: "Recepción — muro completo", place: "Lambrín WPC" },
-    { cat: "lambrin", photo: PROY_LAMBRIN_TV, title: "Muro de TV con mueble a medida", place: "Lambrín WPC" },
-    { cat: "lambrin", photo: PROY_LAMBRIN_REALESTATE, title: "Fachada de oficina — Real Estate Connection", place: "Lambrín WPC exterior" },
-    { cat: "lambrin", photo: PROY_LAMBRIN_DESPACHO, title: "Despacho — lambrín en dos tonos", place: "Lambrín WPC" },
-    { cat: "lambrin", photo: PROY_LAMBRIN_PASILLO, title: "Pasillo con iluminación lineal", place: "Paneles Decorativos" },
+    { cat: "lambrin", photo: PROY_LAMBRIN_RECEPCION, title: "Muro de alberca en WPC exterior", place: "WPC exterior" },
+    { cat: "lambrin", photo: WPC_TV_LISTONES, title: "Muro de TV con mueble a medida", place: "Lambrín WPC" },
     { cat: "lambrin", photo: PROY_LAMBRIN_PUERTA, title: "Vigas giratorias", place: "Paneles Decorativos" },
-    { cat: "lambrin", photo: PROY_LAMBRIN_ALBERCA, title: "Muro de alberca en WPC exterior", place: "WPC exterior" },
+    { cat: "lambrin", photo: PROY_LAMBRIN_ALBERCA, title: "Muro con barra de mármol", place: "Lambrín WPC" },
     { cat: "marmol", photo: PROY_MARMOL_ORO, title: "Muro con veta dorada y repisas", place: "Mármol Sintético" },
     { cat: "marmol", photo: PROY_MARMOL_NEGRO, title: "Área de espera — mármol negro", place: "Mármol Sintético" },
     { cat: "marmol", photo: PROY_MARMOL_COMEDOR, title: "Comedor — mármol con lambrín", place: "Mármol + Lambrín" },
@@ -1145,8 +1111,6 @@ function GaleriaMaterialesSection({ onSelect }: any) {
     { cat: "persianas", photo: PERSIANA_ZEBRA_NEGRA, title: "Recámara — Sheer Elegance negra", place: "Sheer Elegance" },
     { cat: "persianas", photo: PERSIANA_ZEBRA_TAUPE, title: "Recámara esquinera — Sheer Elegance", place: "Sheer Elegance" },
     { cat: "persianas", photo: PERSIANA_SCREEN_EXT, title: "Terraza exterior — screen", place: "Persiana Screen" },
-    { cat: "persianas", photo: PROY_CORTINA_SHEER_BLACKOUT, title: "Sala — cortina sheer con blackout", place: "Cortinas de tela" },
-    { cat: "persianas", photo: PROY_CORTINA_SALA_GRIS, title: "Sala esquinera — cortina en velo gris", place: "Cortinas de tela" },
     { cat: "malla", photo: PROY_MALLA_DELFINARIO, title: "Delfinario — vela de sombra sobre alberca", place: "Malla Sombra" },
     { cat: "lambrin", photo: PROY_LAMBRIN_PLAYA, title: "Casa de playa — celosía frente al mar", place: "Lambrín WPC exterior" },
     { cat: "muro-verde", photo: PROY_MURO_VERDE_LOCAL, title: "Fachada de local — muro verde con flor", place: "Muro Verde" },
@@ -1154,76 +1118,60 @@ function GaleriaMaterialesSection({ onSelect }: any) {
     { cat: "muro-verde", photo: PH_MURO_VERDE_TECHO_RESTAURANTE, title: "Plafón de restaurante con muro verde y lámparas colgantes", place: "Muro Verde" },
     { cat: "muro-verde", photo: PH_MURO_VERDE_ALTAR, title: "Nicho decorativo con muro verde", place: "Muro Verde" },
     { cat: "muro-verde", photo: PH_MURO_VERDE_MURAL_ALBERCA, title: "Alberca con mural y muro verde", place: "Muro Verde" },
-    { cat: "persianas", photo: PH_PERSIANA_MADERA_COCINA, title: "Cocina rústica — persiana de madera", place: "Persianas" },
   ];
 
   const filtered = cat === "todos" ? shots : shots.filter((s) => s.cat === cat);
-  const safeI = Math.min(i, filtered.length - 1);
-  const current = filtered[safeI];
-  const go = (d: number) => setI((prev) => {
-    const n = Math.min(prev, filtered.length - 1) + d;
-    return n < 0 ? filtered.length - 1 : n >= filtered.length ? 0 : n;
-  });
-  const pick = (id: string) => { setCat(id); setI(0); };
-  const linkedProduct = products.find((p) => p.id === (cats.find((c) => c.id === current?.cat) || {}).productId);
-
-  if (!current) return null;
+  const [lb, setLb] = useState<number | null>(null);
+  const items = filtered.map((sh) => ({ src: sh.photo, group: sh.place, caption: sh.title }));
+  const linkedProduct = products.find((p) => p.id === (cats.find((c) => c.id === cat) || {}).productId);
+  const pick = (id: string) => { setCat(id); setLb(null); };
 
   return (
     <section id="proyectos" className="py-24 md:py-32" style={{ background: C.panel, borderTop: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
       <div className="max-w-7xl mx-auto px-5 md:px-10">
         <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>NUESTROS TRABAJOS</p>
         <h2 className="font-display mb-4" style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", color: C.cream, fontWeight: 500 }}>
-          Más acerca de nuestros proyectos.
+          Proyectos reales, instalados por nosotros.
         </h2>
         <p className="max-w-lg mb-10 text-sm md:text-base" style={{ color: C.creamDim }}>
-          Instalaciones reales que hemos hecho en casas, oficinas y locales de la zona.
+          Casas, oficinas y negocios de la zona. Toca cualquier foto para verla en grande.
         </p>
 
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar -mx-5 px-5 md:mx-0 md:px-0 md:flex-wrap">
           {cats.map((c) => (
-            <button key={c.id} onClick={() => pick(c.id)} className="text-xs px-4 py-2 rounded-full font-semibold"
+            <button key={c.id} onClick={() => pick(c.id)} className="text-xs px-4 py-2 rounded-full font-semibold whitespace-nowrap shrink-0"
               style={{ background: cat === c.id ? C.cream : "transparent", color: cat === c.id ? C.carbon : C.creamDim, border: `1px solid ${cat === c.id ? C.cream : C.lineStrong}` }}>
               {c.label}
             </button>
           ))}
         </div>
 
-        <div className="relative rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, aspectRatio: "16/10", background: C.carbon }}>
-          <div className="absolute inset-0" style={{ backgroundImage: `url(${current.photo})`, backgroundSize: "cover", backgroundPosition: "center", transition: "opacity 0.3s ease" }} />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, rgba(15,13,11,0.85), rgba(15,13,11,0.1) 55%)" }} />
-
-          <span className="absolute top-5 right-5 text-xs px-3 py-1 rounded-full" style={{ background: "rgba(15,13,11,0.6)", color: C.cream }}>
-            {safeI + 1} / {filtered.length}
-          </span>
-
-          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-            <p className="text-xs tracking-[0.2em] mb-1" style={{ color: C.copper }}>{current.place.toUpperCase()}</p>
-            <h3 className="font-display text-xl md:text-2xl" style={{ color: C.cream }}>{current.title}</h3>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {filtered.map((sh, k) => (
+            <button key={sh.photo} type="button" onClick={() => setLb(k)}
+              className="group relative rounded-xl overflow-hidden text-left cursor-zoom-in"
+              style={{ aspectRatio: "4/3", border: `1px solid ${C.line}`, background: C.carbon }}>
+              <img src={sh.photo} alt={sh.title} loading="lazy" decoding="async"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(0deg, rgba(15,13,11,0.85), rgba(15,13,11,0) 55%)" }} />
+              <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4">
+                <p className="text-[10px] tracking-[0.18em] mb-0.5" style={{ color: C.copper }}>{sh.place.toUpperCase()}</p>
+                <p className="text-xs md:text-sm leading-snug line-clamp-2" style={{ color: C.cream }}>{sh.title}</p>
+              </div>
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center justify-between gap-4 mt-5 flex-wrap">
-          <div className="flex items-center gap-3">
-            <button onClick={() => go(-1)} aria-label="Anterior" className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ border: `1px solid ${C.lineStrong}`, color: C.cream, background: "transparent" }}>
-              <ChevronLeft size={18} />
-            </button>
-            <button onClick={() => go(1)} aria-label="Siguiente" className="w-11 h-11 rounded-full flex items-center justify-center"
-              style={{ border: `1px solid ${C.lineStrong}`, color: C.cream, background: "transparent" }}>
-              <ChevronRight size={18} />
-            </button>
-            <span className="text-xs" style={{ color: C.creamDim }}>Desliza entre proyectos</span>
-          </div>
-
-          {linkedProduct && (
-            <button onClick={() => onSelect(linkedProduct)} className="px-5 py-3 rounded-full text-sm font-semibold"
+        {linkedProduct && (
+          <div className="mt-8">
+            <button onClick={() => onSelect(linkedProduct)} className="px-5 py-3 rounded-full text-sm font-semibold inline-flex items-center gap-2"
               style={{ background: C.copper, color: C.carbon }}>
-              Ver {linkedProduct.name}
+              Ver todo {linkedProduct.name} <ArrowRight size={15} />
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+      {lb !== null && <PhotoLightbox items={items} index={lb} onIndex={setLb} onClose={() => setLb(null)} groupNoun="material" />}
     </section>
   );
 }
@@ -1337,7 +1285,7 @@ function Configurador({ lockProduct, onQuote }: any) {
           </button>
           <a
             href={buildWaLink({ product: product.name, finish: finish.name })}
-            target="_blank" rel="noreferrer"
+            target="_blank" rel="noopener noreferrer"
             className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2"
             style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}
           >
@@ -1345,7 +1293,7 @@ function Configurador({ lockProduct, onQuote }: any) {
           </a>
         </div>
       </div>
-      {lightbox && <PhotoLightbox src={lightbox} onClose={() => setLightbox(null)} />}
+      {lightbox && <PhotoLightbox items={[{ src: lightbox, group: finish.name }]} index={0} onIndex={() => {}} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
@@ -1554,16 +1502,17 @@ function ModelGroupCard({ group, onExpand }: any) {
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${C.line}` }}>
       <div
-        className="relative aspect-square cursor-zoom-in"
-        style={{ backgroundImage: `url(${group.photos[i]})`, backgroundSize: "cover", backgroundPosition: "center" }}
+        className="relative aspect-square cursor-zoom-in overflow-hidden"
+        style={{ background: C.panel }}
         onClick={() => onExpand(group.photos[i])}
       >
+        <img src={group.photos[i]} alt={group.captions[i] || group.key} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
         {multi && (
           <>
             <button
               onClick={(e) => { e.stopPropagation(); setI((p) => (p - 1 + group.photos.length) % group.photos.length); }}
               className="absolute left-1.5 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center"
-              style={{ width: 26, height: 26, background: "rgba(15,13,11,0.55)", color: C.cream }}
+              style={{ width: 32, height: 32, background: "rgba(15,13,11,0.6)", color: C.cream }}
               aria-label="Anterior"
             >
               <ChevronLeft size={14} />
@@ -1571,7 +1520,7 @@ function ModelGroupCard({ group, onExpand }: any) {
             <button
               onClick={(e) => { e.stopPropagation(); setI((p) => (p + 1) % group.photos.length); }}
               className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center"
-              style={{ width: 26, height: 26, background: "rgba(15,13,11,0.55)", color: C.cream }}
+              style={{ width: 32, height: 32, background: "rgba(15,13,11,0.6)", color: C.cream }}
               aria-label="Siguiente"
             >
               <ChevronRight size={14} />
@@ -1585,75 +1534,171 @@ function ModelGroupCard({ group, onExpand }: any) {
           </>
         )}
       </div>
-      <p className="text-xs px-3 py-2.5" style={{ color: C.creamDim }}>{group.key}</p>
+      <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+        <p className="text-xs truncate" style={{ color: C.cream }}>{group.key}</p>
+        {multi && <p className="text-[10px] shrink-0" style={{ color: C.creamDim, opacity: 0.7 }}>{group.photos.length} fotos</p>}
+      </div>
     </div>
   );
 }
 
-function PhotoLightbox({ src, onClose }: any) {
+/* Visor de fotos a pantalla completa.
+   items: [{ src, group?, caption? }] — "group" es el modelo (ej. "Sheer Elegance").
+   Flechas/teclado/deslizar: foto anterior/siguiente. "Siguiente modelo": salta al
+   primer foto del siguiente grupo, para brincar entre modelos del mismo producto. */
+function PhotoLightbox({ items, index, onIndex, onClose, groupNoun = "modelo" }: any) {
+  const list = (items || []).filter((it: any) => it && it.src);
+  const n = list.length;
+  const i = Math.max(0, Math.min(index || 0, n - 1));
+  const cur = list[i];
+  const touchX = useRef<number | null>(null);
+
+  const go = useCallback((d: number) => { if (n > 1) onIndex((i + d + n) % n); }, [i, n, onIndex]);
+
+  const groups: string[] = [];
+  list.forEach((it: any) => { if (it.group && !groups.includes(it.group)) groups.push(it.group); });
+  const gi = cur?.group ? groups.indexOf(cur.group) : -1;
+  const goGroup = (d: number) => {
+    if (groups.length < 2) return;
+    const target = groups[(gi + d + groups.length) % groups.length];
+    const k = list.findIndex((it: any) => it.group === target);
+    if (k >= 0) onIndex(k);
+  };
+  const inGroup = cur?.group ? list.filter((it: any) => it.group === cur.group) : [];
+  const posInGroup = cur?.group ? inGroup.indexOf(cur) + 1 : 0;
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowRight") go(1);
+      else if (e.key === "ArrowLeft") go(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [go, onClose]);
+
+  // precarga la foto anterior y la siguiente para que el cambio sea inmediato
+  useEffect(() => {
+    if (n < 2) return;
+    [list[(i + 1) % n], list[(i - 1 + n) % n]].forEach((it: any) => { const im = new Image(); im.src = it.src; });
+  }, [i, n]); // eslint-disable-line
+
+  if (!cur) return null;
+  const navBtn = "rounded-full flex items-center justify-center transition-colors";
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: "rgba(10,9,8,0.92)" }}
+      className="fixed inset-0 z-[100] flex flex-col"
+      style={{ background: "#0A0908" }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Foto ampliada"
       onClick={onClose}
+      onTouchStart={(e: any) => { touchX.current = e.touches[0].clientX; }}
+      onTouchEnd={(e: any) => {
+        if (touchX.current === null) return;
+        const dx = e.changedTouches[0].clientX - touchX.current;
+        touchX.current = null;
+        if (Math.abs(dx) > 45) go(dx < 0 ? 1 : -1);
+      }}
     >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 rounded-full flex items-center justify-center"
-        style={{ width: 36, height: 36, background: "rgba(255,255,255,0.1)", color: C.cream }}
-        aria-label="Cerrar"
-      >
-        <X size={18} />
-      </button>
-      <img
-        src={src}
-        onClick={(e) => e.stopPropagation()}
-        className="max-w-full max-h-full rounded-lg object-contain"
-        style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
-      />
+      <div className="flex items-center justify-between gap-3 px-4 md:px-6 py-3" onClick={(e) => e.stopPropagation()}>
+        <div className="min-w-0">
+          {cur.group && <p className="text-[11px] tracking-[0.2em] truncate" style={{ color: C.copper }}>{cur.group.toUpperCase()}{inGroup.length > 1 ? ` · ${posInGroup}/${inGroup.length}` : ""}</p>}
+          {cur.caption && cur.caption !== cur.group && <p className="text-sm truncate" style={{ color: C.creamDim }}>{cur.caption}</p>}
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {n > 1 && <span className="text-xs tabular-nums" style={{ color: C.creamDim }}>{i + 1} / {n}</span>}
+          <button onClick={onClose} className={navBtn} style={{ width: 40, height: 40, background: "rgba(255,255,255,0.1)", color: C.cream }} aria-label="Cerrar">
+            <X size={20} />
+          </button>
+        </div>
+      </div>
+
+      <div className="relative flex-1 min-h-0 flex items-center justify-center px-2 md:px-20">
+        <img
+          key={cur.src}
+          src={cur.src}
+          alt={cur.caption || cur.group || "Foto"}
+          onClick={(e) => e.stopPropagation()}
+          className="max-w-full max-h-full rounded-lg object-contain select-none"
+          style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}
+          draggable={false}
+        />
+        {n > 1 && (
+          <>
+            <button onClick={(e) => { e.stopPropagation(); go(-1); }} className={`${navBtn} absolute left-2 md:left-5 top-1/2 -translate-y-1/2`}
+              style={{ width: 46, height: 46, background: "rgba(15,13,11,0.7)", border: `1px solid ${C.lineStrong}`, color: C.cream }} aria-label="Foto anterior">
+              <ChevronLeft size={22} />
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); go(1); }} className={`${navBtn} absolute right-2 md:right-5 top-1/2 -translate-y-1/2`}
+              style={{ width: 46, height: 46, background: "rgba(15,13,11,0.7)", border: `1px solid ${C.lineStrong}`, color: C.cream }} aria-label="Foto siguiente">
+              <ChevronRight size={22} />
+            </button>
+          </>
+        )}
+      </div>
+
+      {groups.length > 1 && (
+        <div className="flex items-center justify-center gap-3 px-4 py-4" onClick={(e) => e.stopPropagation()}>
+          <button onClick={() => goGroup(-1)} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-full"
+            style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}>
+            <ChevronLeft size={14} /> {groupNoun === "modelo" ? "Modelo anterior" : "Anterior"}
+          </button>
+          <span className="text-xs hidden sm:inline" style={{ color: C.creamDim }}>{groupNoun === "modelo" ? "Modelo" : "Material"} {gi + 1} de {groups.length}</span>
+          <button onClick={() => goGroup(1)} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2.5 rounded-full"
+            style={{ background: C.copper, color: C.carbon }}>
+            {groupNoun === "modelo" ? "Siguiente modelo" : "Siguiente material"} <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-function SimpleProductExperience({ product, onBack, onQuote }: any) {
-  const { finishes } = useProductData();
-  const photo = PRODUCT_PHOTOS[product.id];
-  const gallery = PRODUCT_GALLERY[product.id] || [];
-  const galleryNames = NAMED_GALLERY[product.id] || [];
-  const allPhotos = [photo, ...gallery].filter(Boolean);
-  const fallbackFinish = finishes.find((f) => f.productId === product.id);
-  const [lightbox, setLightbox] = useState<string | null>(null);
+/* Convierte la galería de un producto (agrupada por modelo) en la lista plana
+   que recorre el visor — portada incluida si no está ya en la galería. */
+function productLightboxItems(product: any) {
+  const cover = PRODUCT_PHOTOS[product.id];
+  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || []);
+  const items: any[] = [];
+  groups.forEach((g: any) => g.photos.forEach((src: string, j: number) => items.push({ src, group: g.key || product.name, caption: g.captions[j] })));
+  if (cover && !items.some((it) => it.src === cover)) items.unshift({ src: cover, group: product.name });
+  return items;
+}
+
+function ProductPage({ product, onBack, onQuote }: any) {
+  const items = useMemo(() => productLightboxItems(product), [product]);
+  const cover = PRODUCT_PHOTOS[product.id];
+  const carouselPhotos = Array.from(new Set([cover, ...items.map((it: any) => it.src)].filter(Boolean)));
+  const groups = groupGalleryByModel(PRODUCT_GALLERY[product.id] || [], NAMED_GALLERY[product.id] || []);
+  const [lb, setLb] = useState<number | null>(null);
+  const openBySrc = (src: string) => { const k = items.findIndex((it: any) => it.src === src); setLb(k >= 0 ? k : 0); };
   return (
     <div style={{ background: C.carbon, color: C.cream, minHeight: "100vh" }}>
       <header style={{ borderBottom: `1px solid ${C.line}` }} className="sticky top-0 z-40 backdrop-blur bg-black/40">
         <div className="max-w-7xl mx-auto px-5 md:px-10 py-4 flex items-center justify-between">
           <button onClick={onBack} className="flex items-center gap-2 text-sm" style={{ color: C.creamDim }}>
-            <ChevronLeft size={16} /> Materiales
+            <ChevronLeft size={16} /> Catálogo
           </button>
           <span className="font-display text-sm tracking-widest">{DEMO_CONFIG.brand}</span>
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-5 md:px-10 pt-16 pb-10">
-        <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>{product.code} · SERVICIO</p>
+      <section className="max-w-7xl mx-auto px-5 md:px-10 pt-14 pb-10">
+        <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>TRABAJOS REALES · {DEMO_CONFIG.city.toUpperCase()}</p>
         <h1 className="font-display" style={{ fontSize: "clamp(2.4rem, 6vw, 4.5rem)", fontWeight: 500 }}>{product.name}</h1>
       </section>
 
       <section className="max-w-7xl mx-auto px-5 md:px-10 pb-16">
         <div className="grid lg:grid-cols-5 gap-10">
-          <div className="lg:col-span-3 rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, aspectRatio: "4/3", ...(allPhotos.length ? {} : textureStyle(fallbackFinish)) }}>
-            {allPhotos.length > 0 && <AutoPhotoCarousel photos={allPhotos} alt={product.name} onExpand={setLightbox} />}
-            {allPhotos.length === 0 && (
-              <div className="w-full h-full flex items-end p-6">
-                <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: "rgba(15,13,11,0.55)", color: C.cream }}>
-                  Imagen de referencia — pendiente foto real
-                </span>
-              </div>
-            )}
+          <div className="lg:col-span-3 rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, aspectRatio: "4/3", background: C.panel }}>
+            {carouselPhotos.length > 0 && <AutoPhotoCarousel photos={carouselPhotos} alt={product.name} onExpand={openBySrc} />}
           </div>
           <div className="lg:col-span-2 flex flex-col justify-center gap-6">
             <p className="text-sm" style={{ color: C.creamDim }}>
-              Trabajo real de {DEMO_CONFIG.brand} — cuéntanos las medidas de tu espacio y te cotizamos por WhatsApp.
+              Cuéntanos las medidas de tu espacio y te cotizamos por WhatsApp.
             </p>
             <div className="flex flex-col gap-3">
               <button
@@ -1665,102 +1710,48 @@ function SimpleProductExperience({ product, onBack, onQuote }: any) {
               </button>
               <a
                 href={buildWaLink({ product: product.name })}
-                target="_blank" rel="noreferrer"
+                target="_blank" rel="noopener noreferrer"
                 className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2"
                 style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}
               >
                 <MessageCircle size={16} /> Cotizar por WhatsApp
               </a>
+              {items.length > 1 && (
+                <button onClick={() => setLb(0)} className="w-full text-center px-5 py-3 rounded-full text-sm flex items-center justify-center gap-2"
+                  style={{ color: C.creamDim }}>
+                  Ver las {items.length} fotos en grande <ArrowRight size={14} />
+                </button>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {gallery.length > 0 && (
+      {groups.length > 0 && (
         <section className="max-w-7xl mx-auto px-5 md:px-10 pb-28">
-          <p className="text-xs tracking-[0.3em] mb-6" style={{ color: C.copper }}>MODELOS — {product.name.toUpperCase()}</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {groupGalleryByModel(gallery, galleryNames).map((group, i) => (
-              <ModelGroupCard key={i} group={group} onExpand={setLightbox} />
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1 sm:gap-4 mb-6">
+            <p className="text-xs tracking-[0.3em]" style={{ color: C.copper }}>MODELOS — {product.name.toUpperCase()}</p>
+            <p className="text-xs" style={{ color: C.creamDim, opacity: 0.7 }}>{groups.length} {groups.length === 1 ? "modelo" : "modelos"} · toca para ampliar</p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+            {groups.map((group: any, i: number) => (
+              <ModelGroupCard key={i} group={group} onExpand={openBySrc} />
             ))}
           </div>
         </section>
       )}
-      {lightbox && <PhotoLightbox src={lightbox} onClose={() => setLightbox(null)} />}
-    </div>
-  );
-}
-
-/* ---------- Producto (experiencia dedicada) ---------- */
-function ProductExperience({ product, onBack, onQuote }: any) {
-  const photo = PRODUCT_PHOTOS[product.id];
-  const gallery = PRODUCT_GALLERY[product.id] || [];
-  const galleryNames = NAMED_GALLERY[product.id] || [];
-  const allPhotos = [photo, ...gallery].filter(Boolean);
-  const [lightbox, setLightbox] = useState<string | null>(null);
-  return (
-    <div style={{ background: C.carbon, color: C.cream, minHeight: "100vh" }}>
-      <header style={{ borderBottom: `1px solid ${C.line}` }} className="sticky top-0 z-40 backdrop-blur bg-black/40">
-        <div className="max-w-7xl mx-auto px-5 md:px-10 py-4 flex items-center justify-between">
-          <button onClick={onBack} className="flex items-center gap-2 text-sm" style={{ color: C.creamDim }}>
-            <ChevronLeft size={16} /> Materiales
-          </button>
-          <span className="font-display text-sm tracking-widest">{DEMO_CONFIG.brand}</span>
-        </div>
-      </header>
-
-      <section className="max-w-7xl mx-auto px-5 md:px-10 pt-16 pb-10">
-        <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>{product.code} · FAMILIA DE PRODUCTO</p>
-        <h1 className="font-display" style={{ fontSize: "clamp(2.4rem, 6vw, 4.5rem)", fontWeight: 500 }}>{product.name}</h1>
-      </section>
-
-      <section className="max-w-7xl mx-auto px-5 md:px-10 pb-16">
-        <div className="grid lg:grid-cols-5 gap-10">
-          <div className="lg:col-span-3 rounded-2xl overflow-hidden" style={{ border: `1px solid ${C.line}`, aspectRatio: "4/3" }}>
-            {allPhotos.length > 0 && <AutoPhotoCarousel photos={allPhotos} alt={product.name} onExpand={setLightbox} />}
-          </div>
-          <div className="lg:col-span-2 flex flex-col justify-center gap-3">
-            <button
-              onClick={() => onQuote({ product: product.name })}
-              className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold"
-              style={{ background: C.copper, color: C.carbon }}
-            >
-              Cotizar {product.name.toLowerCase()}
-            </button>
-            <a
-              href={buildWaLink({ product: product.name })}
-              target="_blank" rel="noreferrer"
-              className="w-full text-center px-5 py-3.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2"
-              style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}
-            >
-              <MessageCircle size={16} /> Cotizar por WhatsApp
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {gallery.length > 0 && (
-        <section className="max-w-7xl mx-auto px-5 md:px-10 pb-28">
-          <p className="text-xs tracking-[0.3em] mb-6" style={{ color: C.copper }}>TRABAJOS REALES — {product.name.toUpperCase()}</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {groupGalleryByModel(gallery, galleryNames).map((group, i) => (
-              <ModelGroupCard key={i} group={group} onExpand={setLightbox} />
-            ))}
-          </div>
-        </section>
-      )}
-      {lightbox && <PhotoLightbox src={lightbox} onClose={() => setLightbox(null)} />}
+      {lb !== null && <PhotoLightbox items={items} index={lb} onIndex={setLb} onClose={() => setLb(null)} />}
     </div>
   );
 }
 
 function ProjectsStrip() {
   return (
-    <section id="proyectos" className="py-24 md:py-32" style={{ background: C.panel, borderTop: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
+    <section id="antes-despues" className="py-24 md:py-32" style={{ background: C.panel, borderTop: `1px solid ${C.line}`, borderBottom: `1px solid ${C.line}` }}>
       <div className="max-w-7xl mx-auto px-5 md:px-10">
-        <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>PROYECTOS</p>
+        <p className="text-xs tracking-[0.3em] mb-4" style={{ color: C.copper }}>ANTES Y DESPUÉS</p>
         <h2 className="font-display mb-4" style={{ fontSize: "clamp(2rem, 4vw, 3.2rem)", color: C.cream, fontWeight: 500 }}>
-          Proyectos que inspiran.
+          De obra gris a terminado.
         </h2>
         <p className="max-w-lg mb-10 text-sm md:text-base" style={{ color: C.creamDim }}>
           Arrastra el control para comparar el muro antes y después de instalar el pasto sintético y el muro verde.
@@ -1777,7 +1768,7 @@ function ProjectsStrip() {
             </p>
             <a
               href={buildWaLink({ product: "Pasto Sintético", space: "Muro" })}
-              target="_blank" rel="noreferrer"
+              target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-3 rounded-full"
               style={{ background: C.copper, color: C.carbon }}
             >
@@ -1904,19 +1895,19 @@ function Footer({ onNav, onGoAdmin }: any) {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-10">
         <div>
           <p className="font-display tracking-widest text-lg mb-3">{DEMO_CONFIG.brand}</p>
-          <p className="text-sm max-w-xs" style={{ color: C.creamDim, opacity: 0.7 }}>Revestimientos decorativos para arquitectura e interiorismo. {DEMO_CONFIG.city}.</p>
+          <p className="text-sm max-w-xs" style={{ color: C.creamDim, opacity: 0.7 }}>Revestimientos, persianas y soluciones de exterior, con instalación. {DEMO_CONFIG.city}.</p>
         </div>
         <div className="flex gap-14 flex-wrap">
           <div>
             <p className="text-xs tracking-[0.2em] mb-3" style={{ color: C.creamDim, opacity: 0.5 }}>NAVEGACIÓN</p>
-            {["materiales", "configurador", "aplicaciones", "proyectos", "cotizador"].map((id) => (
-              <button key={id} onClick={() => onNav(id)} className="block text-sm py-1 capitalize" style={{ color: C.creamDim }}>{id}</button>
+            {NAV_LINKS.filter(([id]) => id !== "inicio").map(([id, label]) => (
+              <button key={id} onClick={() => onNav(id)} className="block text-sm py-1 text-left" style={{ color: C.creamDim }}>{label}</button>
             ))}
           </div>
           <div>
             <p className="text-xs tracking-[0.2em] mb-3" style={{ color: C.creamDim, opacity: 0.5 }}>CONTACTO</p>
-            <a href={buildWaLink({})} target="_blank" rel="noreferrer" className="block text-sm py-1" style={{ color: C.creamDim }}>WhatsApp</a>
-            <a href={DEMO_CONFIG.facebookUrl} target="_blank" rel="noreferrer" className="text-sm py-1 flex items-center gap-2" style={{ color: C.creamDim }}><Facebook size={14} /> Facebook</a>
+            <a href={buildWaLink({})} target="_blank" rel="noopener noreferrer" className="block text-sm py-1" style={{ color: C.creamDim }}>WhatsApp</a>
+            <a href={DEMO_CONFIG.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-sm py-1 flex items-center gap-2" style={{ color: C.creamDim }}><Facebook size={14} /> Facebook</a>
           </div>
         </div>
       </div>
@@ -1931,7 +1922,7 @@ function FloatingWhatsApp({ context }: any) {
   return (
     <a
       href={buildWaLink(context || {})}
-      target="_blank" rel="noreferrer"
+      target="_blank" rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-lg lg:hidden"
       style={{ background: C.copper }}
     >
