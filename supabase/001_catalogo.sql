@@ -40,6 +40,25 @@ create index if not exists product_photos_product_sort on public.product_photos 
 alter table public.product_photos enable row level security;
 
 -- 3) Permisos: el público solo LEE el catálogo; el personal activo (dueño y empleados) lo edita
+-- 3a) Un usuario DESACTIVADO pierde el acceso de inmediato (antes is_staff/is_admin no revisaban "active").
+--     Seguro: si no existe un ADMIN activo, se cancela todo para no dejar a nadie fuera.
+do $chk$ begin
+  if not exists (select 1 from public.profiles where role = 'ADMIN' and active) then
+    raise exception 'No hay un ADMIN activo en profiles: no se aplica nada.';
+  end if;
+end $chk$;
+create or replace function public.is_admin() returns boolean language sql stable security definer set search_path to 'public' as $f$
+  select exists (select 1 from profiles where id = auth.uid() and role = 'ADMIN' and active);
+$f$;
+create or replace function public.is_staff() returns boolean language sql stable security definer set search_path to 'public' as $f$
+  select exists (select 1 from profiles where id = auth.uid() and role in ('ADMIN', 'COLABORADOR') and active);
+$f$;
+-- 3b) La regla de lectura de perfiles se consultaba a sí misma (error "infinite recursion"); se reemplaza.
+drop policy if exists "(auth.uid() = id) OR is_admin()" on public.profiles;
+drop policy if exists "Perfil propio o admin" on public.profiles;
+create policy "Perfil propio o admin" on public.profiles for select to authenticated
+  using (auth.uid() = id or public.is_admin());
+-- 3c) Catálogo
 drop policy if exists "Catalogo publico de fotos" on public.product_photos;
 create policy "Catalogo publico de fotos" on public.product_photos for select using (true);
 drop policy if exists "Personal edita fotos" on public.product_photos;
