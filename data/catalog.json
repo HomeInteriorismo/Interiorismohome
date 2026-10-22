@@ -1,0 +1,568 @@
+{
+ "products": [
+  {
+   "id": "lambrin-wpc",
+   "code": "WPC",
+   "name": "Lambrín WPC",
+   "short": "Madera técnica de alto desempeño para muros y plafones interiores.",
+   "description": "",
+   "cover": "/img/wpc_tv_listones.jpg",
+   "sort": 0,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/wpc_muro_alberca.jpg",
+     "model": "Muro exterior",
+     "caption": "Muro exterior — junto a alberca",
+     "sort": 0
+    },
+    {
+     "path": "/img/wpc_plafon.jpg",
+     "model": "Plafón exterior",
+     "caption": "Plafón exterior — vigas WPC",
+     "sort": 1
+    },
+    {
+     "path": "/img/wpc_tv_listones.jpg",
+     "model": "Muro TV",
+     "caption": "Muro TV — listones de madera",
+     "sort": 2
+    },
+    {
+     "path": "/img/wpc_cabecera_cama.jpg",
+     "model": "Cabecera de cama",
+     "caption": "Cabecera de cama",
+     "sort": 3
+    },
+    {
+     "path": "/img/wpc_muro_marmol_barra.jpg",
+     "model": "Muro con barra de mármol",
+     "caption": "Muro con barra de mármol",
+     "sort": 4
+    }
+   ]
+  },
+  {
+   "id": "panel-pvc",
+   "code": "PVC",
+   "name": "Piso WPC",
+   "short": "Paneles ligeros con acabado tipo madera, listos para instalación rápida.",
+   "description": "",
+   "cover": "/img/piso_wpc_cover_sala.jpg",
+   "sort": 1,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/piso_wpc_cover_sala.jpg",
+     "model": "Sala con piso de madera y muro de listones",
+     "caption": "Sala con piso de madera y muro de listones",
+     "sort": 0
+    }
+   ]
+  },
+  {
+   "id": "marmol-sintetico",
+   "code": "MS",
+   "name": "Mármol Sintético",
+   "short": "La presencia del mármol, sin las limitaciones de la piedra natural.",
+   "description": "",
+   "cover": "/img/proy_marmol_comedor.jpg",
+   "sort": 2,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/proy_marmol_oro.jpg",
+     "model": "Muro con veta dorada y repisas",
+     "caption": "Muro con veta dorada y repisas",
+     "sort": 0
+    },
+    {
+     "path": "/img/proy_marmol_negro.jpg",
+     "model": "Área de espera",
+     "caption": "Área de espera — mármol negro",
+     "sort": 1
+    },
+    {
+     "path": "/img/proy_marmol_comedor.jpg",
+     "model": "Comedor",
+     "caption": "Comedor — mármol con lambrín",
+     "sort": 2
+    }
+   ]
+  },
+  {
+   "id": "paneles-decorativos",
+   "code": "PD",
+   "name": "Paneles Decorativos",
+   "short": "Lambrín de acabado liso — la calidez de la madera en superficie uniforme.",
+   "description": "",
+   "cover": "/img/paneles_deco_cover.jpg",
+   "sort": 3,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/paneles_deco_cover.jpg",
+     "model": "Sala con muro de paneles y luz dorada",
+     "caption": "Sala con muro de paneles y luz dorada",
+     "sort": 0
+    }
+   ]
+  },
+  {
+   "id": "persianas",
+   "code": "PER",
+   "name": "Persianas",
+   "short": "Persianas enrollables, de madera y doble tejido a la medida.",
+   "description": "",
+   "cover": "/img/ph_persiana_screen.jpg",
+   "sort": 4,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/persiana_madera_ventana.jpg",
+     "model": "Madera",
+     "caption": "Madera — ventana con vista al jardín",
+     "sort": 0
+    },
+    {
+     "path": "/img/persiana_pasillo_cristal.jpg",
+     "model": "Madera",
+     "caption": "Madera — pasillo con balcón",
+     "sort": 1
+    },
+    {
+     "path": "/img/persiana_sala_cojines.jpg",
+     "model": "Madera",
+     "caption": "Madera — sala con cojines",
+     "sort": 2
+    },
+    {
+     "path": "/img/ph_sheer_elegance.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance",
+     "sort": 3
+    },
+    {
+     "path": "/img/sheer_gris_infantil.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — recámara infantil",
+     "sort": 4
+    },
+    {
+     "path": "/img/sheer_azul_pasillo.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — pasillo azul marino",
+     "sort": 5
+    },
+    {
+     "path": "/img/sheer_taupe_esquina.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — instalación",
+     "sort": 6
+    },
+    {
+     "path": "/img/sheer_azul_tragaluz.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — con tragaluz",
+     "sort": 7
+    },
+    {
+     "path": "/img/ph_vertical_pvc.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC",
+     "sort": 8
+    },
+    {
+     "path": "/img/vpvc_real_1.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC — instalación real",
+     "sort": 9
+    },
+    {
+     "path": "/img/vpvc_real_2.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC — instalación real",
+     "sort": 10
+    },
+    {
+     "path": "/img/vpvc_cafe.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC — café",
+     "sort": 11
+    },
+    {
+     "path": "/img/vpvc_hueso.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC — hueso",
+     "sort": 12
+    },
+    {
+     "path": "/img/vpvc_naranja.jpg",
+     "model": "Vertical PVC",
+     "caption": "Vertical PVC — naranja",
+     "sort": 13
+    },
+    {
+     "path": "/img/ph_persiana_blackout.jpg",
+     "model": "Blackout",
+     "caption": "Blackout",
+     "sort": 14
+    },
+    {
+     "path": "/img/blackout_cafe_ladrillo.jpg",
+     "model": "Blackout",
+     "caption": "Blackout — muro de ladrillo",
+     "sort": 15
+    },
+    {
+     "path": "/img/blackout_gris_alberca.jpg",
+     "model": "Blackout",
+     "caption": "Blackout — vista a la alberca",
+     "sort": 16
+    },
+    {
+     "path": "/img/blackout_gris_lampara.jpg",
+     "model": "Blackout",
+     "caption": "Blackout — con lámpara colgante",
+     "sort": 17
+    },
+    {
+     "path": "/img/ph_persiana_screen.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — terraza con vista al mar",
+     "sort": 18
+    },
+    {
+     "path": "/img/screen_palapa_terraza.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — terraza palapa",
+     "sort": 19
+    },
+    {
+     "path": "/img/screen_vista_mar_1.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — vista al mar",
+     "sort": 20
+    },
+    {
+     "path": "/img/screen_vista_mar_2.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — vista al mar",
+     "sort": 21
+    },
+    {
+     "path": "/img/ph_cortinas_tela.jpg",
+     "model": "Cortina",
+     "caption": "Cortina — instalación",
+     "sort": 22
+    },
+    {
+     "path": "/img/cortina_sheer_armchairs.jpg",
+     "model": "Cortina",
+     "caption": "Cortina — ondulada crema",
+     "sort": 23
+    },
+    {
+     "path": "/img/toldo_vela_instalacion.jpg",
+     "model": "Cortina",
+     "caption": "Cortina — plisada perla",
+     "sort": 24
+    },
+    {
+     "path": "/img/toldo_retractil_alberca.jpg",
+     "model": "Cortina",
+     "caption": "Cortina — terracota con sheer",
+     "sort": 25
+    },
+    {
+     "path": "/img/persiana_zebra_azul.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — azul",
+     "sort": 26
+    },
+    {
+     "path": "/img/persiana_zebra_negra.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — negra",
+     "sort": 27
+    },
+    {
+     "path": "/img/persiana_zebra_taupe.jpg",
+     "model": "Sheer Elegance",
+     "caption": "Sheer Elegance — taupe",
+     "sort": 28
+    },
+    {
+     "path": "/img/persiana_sheer_mar.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — vista al mar",
+     "sort": 29
+    },
+    {
+     "path": "/img/persiana_screen_ext.jpg",
+     "model": "Screen Malla Solar",
+     "caption": "Screen Malla Solar — instalación exterior",
+     "sort": 30
+    }
+   ]
+  },
+  {
+   "id": "pasto-sintetico",
+   "code": "PS",
+   "name": "Pasto Sintético",
+   "short": "Áreas verdes de bajo mantenimiento para patios, terrazas y jardines.",
+   "description": "",
+   "cover": "/img/pasto_patio_bar.jpg",
+   "sort": 5,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/proy_pasto_andador.jpg",
+     "model": "Andador con iluminación de piso",
+     "caption": "Andador con iluminación de piso",
+     "sort": 0
+    },
+    {
+     "path": "/img/proy_pasto_columpio.jpg",
+     "model": "Área de juegos",
+     "caption": "Área de juegos",
+     "sort": 1
+    },
+    {
+     "path": "/img/pasto_patio_ladrillo.jpg",
+     "model": "Patio con muro de ladrillo",
+     "caption": "Patio con muro de ladrillo",
+     "sort": 2
+    },
+    {
+     "path": "/img/pasto_palmeras_piedra.jpg",
+     "model": "Palmeras con piedra decorativa",
+     "caption": "Palmeras con piedra decorativa",
+     "sort": 3
+    },
+    {
+     "path": "/img/pasto_andador_nocturno.jpg",
+     "model": "Andador nocturno con iluminación",
+     "caption": "Andador nocturno con iluminación",
+     "sort": 4
+    },
+    {
+     "path": "/img/pasto_patio_bar.jpg",
+     "model": "Patio con barra y palapa",
+     "caption": "Patio con barra y palapa",
+     "sort": 5
+    },
+    {
+     "path": "/img/pasto_jardin_flores.jpg",
+     "model": "Jardín con seto de flores",
+     "caption": "Jardín con seto de flores",
+     "sort": 6
+    }
+   ]
+  },
+  {
+   "id": "palapa-sintetica",
+   "code": "PAL",
+   "name": "Techos de Palapa",
+   "short": "Techos de palapa sintética, resistentes al clima costero.",
+   "description": "",
+   "cover": "/img/palapa_showroom.jpg",
+   "sort": 6,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/palapa_apex_estructura.jpg",
+     "model": "Estructura",
+     "caption": "Estructura — vigas radiales",
+     "sort": 0
+    },
+    {
+     "path": "/img/palapa_exterior_real.jpg",
+     "model": "Instalación exterior",
+     "caption": "Instalación exterior",
+     "sort": 1
+    },
+    {
+     "path": "/img/palapa_textura_natural.jpg",
+     "model": "Textura interior",
+     "caption": "Textura interior",
+     "sort": 2
+    },
+    {
+     "path": "/img/palapa_showroom.jpg",
+     "model": "Muestra en showroom",
+     "caption": "Muestra en showroom",
+     "sort": 3
+    },
+    {
+     "path": "/img/palapa_material_sintetico.jpg",
+     "model": "Material",
+     "caption": "Material — palma sintética",
+     "sort": 4
+    }
+   ]
+  },
+  {
+   "id": "tapiceria-exterior",
+   "code": "TAP",
+   "name": "Tapicería de Exterior",
+   "short": "Cojines y tapices para muebles de exterior, resistentes a la intemperie.",
+   "description": "",
+   "cover": "/img/ph_tapiceria.jpg",
+   "sort": 7,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/ph_tapiceria_mesa_larga.jpg",
+     "model": "Sillas de comedor",
+     "caption": "Sillas de comedor — cojín turquesa",
+     "sort": 0
+    },
+    {
+     "path": "/img/ph_tapiceria_banca.jpg",
+     "model": "Banca de obra",
+     "caption": "Banca de obra — tapizado gris oscuro",
+     "sort": 1
+    },
+    {
+     "path": "/img/ph_tapiceria_sofa_gris.jpg",
+     "model": "Sala tipo banca",
+     "caption": "Sala tipo banca — tapizado taupe",
+     "sort": 2
+    },
+    {
+     "path": "/img/tap_camastros_azules.jpg",
+     "model": "Camastros",
+     "caption": "Camastros — cojín azul",
+     "sort": 3
+    },
+    {
+     "path": "/img/tap_sala_curva_azul.jpg",
+     "model": "Sala curva",
+     "caption": "Sala curva — cojín azul",
+     "sort": 4
+    }
+   ]
+  },
+  {
+   "id": "malla-toldos",
+   "code": "MSO",
+   "name": "Malla Sombra y Toldos",
+   "short": "Malla sombra, toldos retráctiles y de caída vertical, a la medida.",
+   "description": "",
+   "cover": "/img/cortina_plisada.jpg",
+   "sort": 8,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/proy_malla_delfinario.jpg",
+     "model": "Malla",
+     "caption": "Malla — delfinario",
+     "sort": 0
+    },
+    {
+     "path": "/img/cortina_ondulada.jpg",
+     "model": "Instalación de vela de sombra",
+     "caption": "Instalación de vela de sombra",
+     "sort": 1
+    },
+    {
+     "path": "/img/toldo_vela_restaurante.jpg",
+     "model": "Vela de sombra",
+     "caption": "Vela de sombra — restaurante",
+     "sort": 2
+    },
+    {
+     "path": "/img/cortina_plisada.jpg",
+     "model": "Toldo retráctil",
+     "caption": "Toldo retráctil — alberca",
+     "sort": 3
+    },
+    {
+     "path": "/img/toldo_vertical_jardin.jpg",
+     "model": "Toldo vertical",
+     "caption": "Toldo vertical — jardín",
+     "sort": 4
+    }
+   ]
+  },
+  {
+   "id": "muro-verde",
+   "code": "MVE",
+   "name": "Muro Verde",
+   "short": "Muros verdes artificiales de bajo mantenimiento para interior y exterior.",
+   "description": "",
+   "cover": "/img/ph_muro_verde_techo_restaurante.jpg",
+   "sort": 9,
+   "price": null,
+   "price_unit": "m2",
+   "price_mode": "desde",
+   "visible": true,
+   "photos": [
+    {
+     "path": "/img/proy_muro_verde_local.jpg",
+     "model": "Fachada de local",
+     "caption": "Fachada de local — muro verde con flor",
+     "sort": 0
+    },
+    {
+     "path": "/img/proy_muro_verde_fuente.jpg",
+     "model": "Patio con fuente y muro verde",
+     "caption": "Patio con fuente y muro verde",
+     "sort": 1
+    },
+    {
+     "path": "/img/ph_muro_verde_altar.jpg",
+     "model": "Nicho decorativo con muro verde",
+     "caption": "Nicho decorativo con muro verde",
+     "sort": 2
+    },
+    {
+     "path": "/img/ph_muro_verde_techo_restaurante.jpg",
+     "model": "Plafón de restaurante con muro verde y lámparas colgantes",
+     "caption": "Plafón de restaurante con muro verde y lámparas colgantes",
+     "sort": 3
+    },
+    {
+     "path": "/img/ph_muro_verde_mural_alberca.jpg",
+     "model": "Alberca con mural y muro verde",
+     "caption": "Alberca con mural y muro verde",
+     "sort": 4
+    },
+    {
+     "path": "/img/muro_verde_rubens_restaurante.jpg",
+     "model": "Restaurante",
+     "caption": "Restaurante — muro verde con letrero de neón",
+     "sort": 5
+    }
+   ]
+  }
+ ]
+}
