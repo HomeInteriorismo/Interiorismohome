@@ -820,40 +820,58 @@ function PublicNav({ onNav, mobileNav, setMobileNav, onGoAdmin }: any) {
 
 const HERO_VIDEO_CSS = `.hero-video::-webkit-media-controls,.hero-video::-webkit-media-controls-start-playback-button,.hero-video::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none}`;
 
+/* Videos del Hero a pantalla completa, uno a la vez con transición suave.
+   - Al terminar un video (o a los 12 s, por si se atora) pasa al siguiente.
+   - Si el navegador bloquea el autoplay (iPhone en bajo consumo), las portadas
+     siguen alternándose como presentación y el video arranca al primer toque. */
 function HeroVideoBackground() {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  const n = HERO_VIDEOS.length;
+  const vids = () => Array.from(wrapRef.current?.querySelectorAll("video") || []) as HTMLVideoElement[];
+  const playActive = (k: number, restart: boolean) => vids().forEach((v, i) => {
+    try {
+      if (i === k) { v.muted = true; if (restart) v.currentTime = 0; const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+      else v.pause();
+    } catch {}
+  });
+  const next = () => setActive((a) => (a + 1) % n);
+
   useEffect(() => {
-    const vids = () => Array.from(wrapRef.current?.querySelectorAll("video") || []) as HTMLVideoElement[];
-    const tryPlay = () => vids().forEach((v) => { try { v.muted = true; const p = v.play(); if (p && p.catch) p.catch(() => {}); } catch {} });
-    tryPlay();
-    // iOS (modo bajo consumo / Safari) bloquea el autoplay: arrancar al primer toque o scroll
-    const once = () => { tryPlay(); cleanup(); };
+    playActive(active, true);
+    const t = setTimeout(next, 12000);
+    return () => clearTimeout(t);
+  }, [active]); // eslint-disable-line
+
+  useEffect(() => {
+    const once = () => { playActive(activeRef.current, false); cleanup(); };
     const evs = ["touchstart", "click", "scroll", "pointerdown"];
-    // al volver a la pestaña (o desbloquear el celular) el navegador puede haberlos pausado
-    const onVisible = () => { if (document.visibilityState === "visible") tryPlay(); };
+    const onVisible = () => { if (document.visibilityState === "visible") playActive(activeRef.current, false); };
     const cleanup = () => evs.forEach((e) => window.removeEventListener(e, once));
     evs.forEach((e) => window.addEventListener(e, once, { passive: true }));
     document.addEventListener("visibilitychange", onVisible);
     return () => { cleanup(); document.removeEventListener("visibilitychange", onVisible); };
-  }, []);
+  }, []); // eslint-disable-line
+  const activeRef = useRef(0);
+  activeRef.current = active;
+
   return (
-    <div ref={wrapRef} className="absolute inset-0 grid grid-cols-2 gap-0.5" aria-hidden="true">
+    <div ref={wrapRef} className="absolute inset-0" aria-hidden="true">
       <style dangerouslySetInnerHTML={{ __html: HERO_VIDEO_CSS }} />
-      {HERO_VIDEOS.map((v) => (
-        <div key={v.src} className="relative overflow-hidden" style={{ backgroundImage: `url(${v.poster})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+      {HERO_VIDEOS.map((v, i) => (
+        <div key={v.src} className="absolute inset-0 transition-opacity duration-1000"
+          style={{ opacity: i === active ? 1 : 0, backgroundImage: `url(${v.poster})`, backgroundSize: "cover", backgroundPosition: "center" }}>
           <video
             className="hero-video absolute inset-0 w-full h-full object-cover"
             poster={v.poster}
-            autoPlay
             muted
-            loop
             playsInline
-            preload="auto"
+            preload={i === 0 ? "auto" : "metadata"}
             disablePictureInPicture
-            onLoadedData={(e: any) => { try { const p = e.currentTarget.play(); if (p && p.catch) p.catch(() => {}); } catch {} }}
+            onEnded={() => { if (i === active) next(); }}
           >
-            {/* MP4 (iPhone, Safari, Chrome) y WebM de respaldo; si ninguno carga, se oculta el
-                video y queda la foto de portada del recuadro */}
+            {/* MP4 (iPhone, Safari, Chrome) y WebM de respaldo; si ninguno carga, se oculta
+                el video y queda la foto de portada */}
             <source src={v.src} type="video/mp4" />
             <source
               src={v.src.replace(/\.mp4$/, ".webm")}
