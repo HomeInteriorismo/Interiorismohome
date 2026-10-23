@@ -47,6 +47,14 @@ async function shrinkImage(file: File, max = 1600, quality = 0.85): Promise<Blob
   } finally { URL.revokeObjectURL(url); }
 }
 
+/* Link de WhatsApp: acepta "755 123 4567", "+52 755…" o "521755…" sin duplicar el 52 */
+function waLink(raw: string) {
+  let d = String(raw || "").replace(/\D/g, "");
+  if (d.length === 10) d = "52" + d;
+  else if (d.length === 13 && d.startsWith("521")) d = "52" + d.slice(3);
+  return `https://wa.me/${d}`;
+}
+
 function cx(...a: any[]) { return a.filter(Boolean).join(" "); }
 
 /* ---------------- UI básica ---------------- */
@@ -82,8 +90,8 @@ function Toast({ msg, onDone }: any) {
   if (!msg) return null;
   const err = msg.startsWith("Error");
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 rounded-full px-5 py-3 text-sm shadow-lg"
-      style={{ background: err ? K.red : K.ink, color: "#fff" }}>{msg}</div>
+    <div role="status" className="fixed left-1/2 -translate-x-1/2 z-50 rounded-2xl px-5 py-3 text-sm shadow-lg text-center w-max max-w-[calc(100vw-2rem)]"
+      style={{ background: err ? K.red : K.ink, color: "#fff", bottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))" }}>{msg}</div>
   );
 }
 
@@ -160,7 +168,7 @@ function Login({ supabase, say }: any) {
         <p className="text-2xl mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Panel administrativo</p>
         <p className="text-sm mb-7" style={{ color: K.sub }}>Home Interiorismo</p>
         <div className="flex flex-col gap-4">
-          <Field label="Correo"><input required type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} style={inputSty} /></Field>
+          <Field label="Correo"><input required type="email" autoComplete="username" autoCapitalize="none" autoCorrect="off" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} style={inputSty} /></Field>
           {mode === "login" && <Field label="Contraseña"><input required type="password" autoComplete="current-password" value={pw} onChange={(e) => setPw(e.target.value)} className={inputCls} style={inputSty} /></Field>}
           {err && <p className="text-xs" style={{ color: K.red }}>{err}</p>}
           <Btn type="submit" kind="dark" disabled={busy} className="py-3 mt-1">{busy ? <Loader2 size={16} className="animate-spin" /> : mode === "login" ? "Entrar" : "Enviar correo"}</Btn>
@@ -315,11 +323,13 @@ function ProductList({ supabase, say, onEdit, markDirty }: any) {
         {items.map((p, i) => (
           <div key={p.id} className="rounded-2xl overflow-hidden" style={{ background: K.panel, border: `1px solid ${K.line}`, opacity: p.visible ? 1 : 0.6 }}>
             <button onClick={() => onEdit(p.id)} className="block w-full text-left">
-              <div className="aspect-[4/3] bg-cover bg-center" style={{ backgroundImage: `url(${photoUrl(p.cover_photo_url)})`, backgroundColor: K.line }} />
+              <div className="aspect-[4/3] bg-cover bg-center flex items-center justify-center text-xs" style={{ backgroundImage: p.cover_photo_url ? `url(${photoUrl(p.cover_photo_url)})` : undefined, backgroundColor: K.line, color: K.sub }}>
+                {!p.cover_photo_url && "Sin portada: elige una foto con ⭐"}
+              </div>
               <div className="p-4">
-                <p className="font-semibold">{p.name}</p>
+                <p className="font-semibold [overflow-wrap:anywhere]">{p.name}</p>
                 <p className="text-sm" style={{ color: K.accentDark }}>{priceText(p)}</p>
-                <p className="text-xs mt-1" style={{ color: K.sub }}>{counts[p.id] || 0} fotos{p.visible ? "" : " · OCULTO"}</p>
+                <p className="text-xs mt-1" style={{ color: K.sub }}>{counts[p.id] || 0} {(counts[p.id] || 0) === 1 ? "foto" : "fotos"}{p.visible ? "" : " · OCULTO"}</p>
               </div>
             </button>
             <div className="flex items-center gap-1 px-3 pb-3">
@@ -359,7 +369,7 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
   const save = async () => {
     if (!p.name.trim()) return say("Error: el nombre no puede ir vacío");
     const price = p.price === "" || p.price === null || p.price === undefined ? null : Number(p.price);
-    if (price !== null && (isNaN(price) || price < 0)) return say("Error: precio inválido");
+    if (price !== null && (isNaN(price) || price < 0 || price >= 1000000)) return say("Error: el precio debe ser entre $0 y $999,999.99");
     setSaving(true);
     const { error } = await supabase.from("products").update({
       name: p.name.trim(), short: (p.short || "").trim(), description: (p.description || "").trim(),
@@ -446,7 +456,7 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
           </Field>
           {p.price_unit !== "cotizar" && (
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Precio (MXN)"><input type="number" min={0} step="0.01" inputMode="decimal" value={p.price ?? ""} onChange={(e) => setP({ ...p, price: e.target.value })} className={inputCls} style={inputSty} placeholder="Ej. 850" /></Field>
+              <Field label="Precio (MXN)"><input type="number" min={0} max={999999.99} step="0.01" inputMode="decimal" value={p.price ?? ""} onChange={(e) => setP({ ...p, price: e.target.value })} className={inputCls} style={inputSty} placeholder="Ej. 850" /></Field>
               <Field label="Se muestra como">
                 <select value={p.price_mode} onChange={(e) => setP({ ...p, price_mode: e.target.value })} className={inputCls} style={inputSty}>
                   <option value="desde">"Desde $…"</option><option value="exacto">Precio exacto</option>
@@ -548,12 +558,12 @@ function Leads({ supabase, say }: any) {
             <div className="flex-1 min-w-0">
               <p className="font-semibold">{l.name} <span className="text-xs font-normal" style={{ color: K.sub }}>· {new Date(l.created_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}</span></p>
               <p className="text-sm" style={{ color: K.sub }}>{[l.product, l.finish, l.space, l.medidas].filter(Boolean).join(" · ") || "Sin detalles"}</p>
-              {l.message && <p className="text-sm mt-1 whitespace-pre-line">{l.message}</p>}
+              {l.message && <p className="text-sm mt-1 whitespace-pre-line [overflow-wrap:anywhere]">{l.message}</p>}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {l.whatsapp && (
-                <a href={`https://wa.me/52${String(l.whatsapp).replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold" style={{ background: K.green, color: "#fff" }}>
+                <a href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold whitespace-nowrap shrink-0" style={{ background: K.green, color: "#fff" }}>
                   <MessageCircle size={14} /> {l.whatsapp}
                 </a>
               )}
@@ -618,7 +628,7 @@ function UsersAdmin({ supabase, say, me }: any) {
           <div key={u.id} className="rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3" style={{ background: K.panel, border: `1px solid ${K.line}`, opacity: u.active ? 1 : 0.6 }}>
             <div className="flex-1">
               <p className="font-semibold">{u.name} {u.id === me.id && <span className="text-xs font-normal" style={{ color: K.sub }}>(tú)</span>}</p>
-              <p className="text-sm" style={{ color: K.sub }}>{u.email}</p>
+              <p className="text-sm [overflow-wrap:anywhere]" style={{ color: K.sub }}>{u.email}</p>
             </div>
             <select value={u.role} disabled={u.id === me.id} onChange={(e) => update(u, { role: e.target.value })} className="rounded-full px-3 py-2 text-sm" style={inputSty}>
               <option value="COLABORADOR">Colaborador</option><option value="ADMIN">Administrador</option>
