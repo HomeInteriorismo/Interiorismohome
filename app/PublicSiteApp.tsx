@@ -43,8 +43,8 @@ const DEMO_CONFIG = {
    si el navegador bloquea la reproducción (iPhone en bajo consumo) o el video falla,
    se queda la portada y la página nunca se ve vacía. */
 const HERO_VIDEOS = [
-  { src: "/videos/hero1.mp4", poster: "/videos/hero1.jpg" },
-  { src: "/videos/hero2.mp4", poster: "/videos/hero2.jpg" },
+  { src: "/videos/hero2.mp4", poster: "/videos/hero2.jpg", label: "Persianas" },
+  { src: "/videos/toldo.mp4", poster: "/videos/toldo.jpg", label: "Toldo retráctil" },
 ];
 
 /* ============================================================
@@ -405,7 +405,7 @@ export default function PublicSiteApp() {
   const [finishes, setFinishes] = useState(DEMO_DATA.finishes);
 
   const goAdmin = () => {
-    window.location.href = "/admin/login";
+    window.location.href = "/admin";
   };
 
   return (
@@ -583,7 +583,7 @@ const HERO_VIDEO_CSS = `.hero-video::-webkit-media-controls,.hero-video::-webkit
    - Al terminar un video (o a los 12 s, por si se atora) pasa al siguiente.
    - Si el navegador bloquea el autoplay (iPhone en bajo consumo), las portadas
      siguen alternándose como presentación y el video arranca al primer toque. */
-function HeroVideoBackground() {
+function HeroVideoBackground({ className = "absolute inset-0", children }: any) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
   const n = HERO_VIDEOS.length;
@@ -615,7 +615,7 @@ function HeroVideoBackground() {
   activeRef.current = active;
 
   return (
-    <div ref={wrapRef} className="absolute inset-0" aria-hidden="true">
+    <div ref={wrapRef} className={className}>
       <style dangerouslySetInnerHTML={{ __html: HERO_VIDEO_CSS }} />
       {HERO_VIDEOS.map((v, i) => (
         <div key={v.src} className="absolute inset-0 transition-opacity duration-1000"
@@ -640,34 +640,61 @@ function HeroVideoBackground() {
           </video>
         </div>
       ))}
+      {children}
+      {/* Qué producto se ve + indicador de video (tocar cambia de video) */}
+      <div className="absolute z-10 right-4 bottom-4 md:right-10 md:bottom-10 flex items-center gap-3">
+        <span className="text-[11px] md:text-xs tracking-[0.18em] uppercase px-3 py-1.5 rounded-full"
+          style={{ background: "rgba(15,13,11,0.45)", color: C.cream, backdropFilter: "blur(6px)" }}>
+          {HERO_VIDEOS[active].label}
+        </span>
+        <div className="flex gap-1.5">
+          {HERO_VIDEOS.map((v, i) => (
+            <button key={v.src} onClick={() => setActive(i)} aria-label={`Ver video: ${v.label}`}
+              className="h-1.5 rounded-full transition-all"
+              style={{ width: i === active ? 22 : 8, background: i === active ? C.cream : "rgba(245,239,228,0.45)" }} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
+/* Portada: el video es el protagonista.
+   - Computadora: video a pantalla completa; el texto, compacto, abajo a la izquierda
+     con una sombra suave solo detrás de él.
+   - Celular: el video se ve completo (horizontal) y el texto va debajo, sin taparlo. */
 function Hero({ onNav }: any) {
   return (
-    <section id="inicio" className="relative overflow-hidden" style={{ minHeight: "88vh" }}>
-      <HeroVideoBackground />
-      <div className="absolute inset-0" style={{ background: `linear-gradient(100deg, ${C.carbon} 0%, rgba(15,13,11,0.88) 30%, rgba(15,13,11,0.55) 58%, rgba(15,13,11,0.25) 100%)` }} />
-      <div className="absolute inset-0" style={{ background: `linear-gradient(0deg, ${C.carbon} 0%, transparent 30%)` }} />
-      <div className="relative max-w-7xl mx-auto px-5 md:px-10 pt-28 md:pt-32 pb-24 flex flex-col" style={{ minHeight: "88vh" }}>
-        <p className="text-xs md:text-sm tracking-[0.3em]" style={{ color: C.copper }}>INTERIORISMO Y EXTERIORES · {DEMO_CONFIG.city.toUpperCase()}</p>
-        <h1 className="font-display mt-6" style={{ fontSize: "clamp(3rem, 8vw, 6.4rem)", lineHeight: 0.98, color: C.cream, fontWeight: 500 }}>
-          Transforma<br />tu espacio.
-        </h1>
-        <p className="mt-8 max-w-md text-base md:text-lg" style={{ color: C.creamDim }}>
-          Lambrín WPC, mármol sintético, persianas, pasto sintético, toldos, muro verde y palapa. Suministro e instalación a la medida.
-        </p>
-        <div className="mt-10 flex flex-wrap gap-4">
-          <button onClick={() => onNav("materiales")} className="px-6 py-3.5 rounded-full text-sm font-semibold flex items-center gap-2" style={{ background: C.cream, color: C.carbon }}>
-            Explorar materiales <ArrowRight size={16} />
-          </button>
-          <button onClick={() => onNav("proyectos")} className="px-6 py-3.5 rounded-full text-sm font-semibold border flex items-center gap-2" style={{ borderColor: C.lineStrong, color: C.cream }}>
-            Ver proyectos
-          </button>
-          <a href={buildWaLink({})} target="_blank" rel="noopener noreferrer" className="px-6 py-3.5 rounded-full text-sm font-semibold flex items-center gap-2" style={{ border: `1px solid ${C.lineStrong}`, color: C.cream }}>
-            <MessageCircle size={16} /> Cotizar por WhatsApp
-          </a>
+    <section id="inicio" className="relative overflow-hidden md:h-[calc(100svh-65px)] md:min-h-[560px]" style={{ background: C.carbon }}>
+      <HeroVideoBackground className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0 md:aspect-auto">
+        <div className="absolute inset-0 pointer-events-none hidden md:block"
+          style={{ background: "linear-gradient(0deg, rgba(15,13,11,0.82) 0%, rgba(15,13,11,0.45) 24%, rgba(15,13,11,0) 46%)" }} />
+        <div className="absolute inset-0 pointer-events-none hidden md:block"
+          style={{ background: "radial-gradient(ellipse 60% 55% at 0% 100%, rgba(15,13,11,0.55), rgba(15,13,11,0) 70%)" }} />
+        <div className="absolute inset-x-0 bottom-0 h-10 pointer-events-none md:hidden"
+          style={{ background: `linear-gradient(0deg, ${C.carbon}, rgba(15,13,11,0))` }} />
+      </HeroVideoBackground>
+
+      <div className="relative md:absolute md:inset-x-0 md:bottom-0 z-10 md:pointer-events-none">
+        <div className="max-w-7xl mx-auto px-5 md:px-10 pt-6 pb-12 md:pb-14 [&_a]:pointer-events-auto [&_button]:pointer-events-auto">
+          <div className="max-w-3xl" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.35), 0 2px 18px rgba(0,0,0,0.45)" }}>
+            <p className="text-[11px] md:text-xs tracking-[0.3em] font-medium" style={{ color: C.cream, opacity: 0.9 }}>INTERIORISMO Y EXTERIORES · {DEMO_CONFIG.city.toUpperCase()}</p>
+            <h1 className="font-display mt-3" style={{ fontSize: "clamp(2.3rem, 4.6vw, 4.2rem)", lineHeight: 1.02, color: C.cream, fontWeight: 500 }}>
+              Transforma tu espacio.
+            </h1>
+            <p className="mt-3 text-sm md:text-base" style={{ color: C.creamDim }}>
+              Suministro e instalación a la medida.
+            </p>
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button onClick={() => onNav("materiales")} className="px-5 py-3 rounded-full text-sm font-semibold flex items-center gap-2" style={{ background: C.cream, color: C.carbon }}>
+              Ver catálogo <ArrowRight size={16} />
+            </button>
+            <a href={buildWaLink({})} target="_blank" rel="noopener noreferrer" className="px-5 py-3 rounded-full text-sm font-semibold flex items-center gap-2"
+              style={{ border: `1px solid rgba(245,239,228,0.45)`, color: C.cream, background: "rgba(15,13,11,0.25)", backdropFilter: "blur(6px)" }}>
+              <MessageCircle size={16} /> Cotizar por WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -1699,6 +1726,7 @@ function Footer({ onNav, onGoAdmin }: any) {
       </div>
       <div className="max-w-7xl mx-auto mt-14 pt-6 flex justify-between items-center flex-wrap gap-3" style={{ borderTop: `1px solid ${C.line}` }}>
         <p className="text-xs" style={{ color: C.creamDim, opacity: 0.4 }}>© 2026 {DEMO_CONFIG.brand}</p>
+        <a href="/admin" rel="nofollow" className="text-xs" style={{ color: C.creamDim, opacity: 0.4 }}>Acceso personal</a>
       </div>
     </footer>
   );
