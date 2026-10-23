@@ -7,3 +7,21 @@ body {
   color: #f6f1e7;
   font-family: "Inter", sans-serif;
 }
+
+/* Celular: sin destello gris al tocar, sin retraso de 300 ms y sin que se
+   seleccione el texto de los botones al dejar el dedo presionado */
+html {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+button, a, [role="button"], select, label {
+  touch-action: manipulation;
+}
+button, [role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+/* iPhone hace zoom si un campo tiene letra menor a 16 px: en pantallas táctiles se fuerza 16 px */
+@media (pointer: coarse) {
+  input, textarea, select { font-size: 16px !important; }
+}
