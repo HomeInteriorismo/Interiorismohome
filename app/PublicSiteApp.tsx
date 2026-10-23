@@ -534,10 +534,13 @@ function PublicNav({ onNav, mobileNav, setMobileNav, onGoAdmin }: any) {
       className="bg-black/40"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-5 md:px-10 py-4">
-        <button onClick={() => onNav("inicio")} className="flex items-center gap-2.5">
-          <img src={LOGO_HI} alt={DEMO_CONFIG.brand} className="w-8 h-8 rounded-md object-cover" />
-          <span className="font-display tracking-wide text-sm md:text-base" style={{ color: C.cream, letterSpacing: "0.1em" }}>{DEMO_CONFIG.brand}</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          {/* El logo lleva al inicio de sesión del panel (dueño y empleados) */}
+          <a href="/admin" rel="nofollow" title="Acceso personal" aria-label="Acceso personal al panel">
+            <img src={LOGO_HI} alt={DEMO_CONFIG.brand} className="w-8 h-8 rounded-md object-cover" />
+          </a>
+          <button onClick={() => onNav("inicio")} className="font-display tracking-wide text-sm md:text-base" style={{ color: C.cream, letterSpacing: "0.1em" }}>{DEMO_CONFIG.brand}</button>
+        </div>
         <nav className="hidden lg:flex items-center gap-8">
           {links.map(([id, label]) => (
             <button key={id} onClick={() => onNav(id)} className="text-sm tracking-wide" style={{ color: C.creamDim }}>
