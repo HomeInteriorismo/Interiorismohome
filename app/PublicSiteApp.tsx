@@ -618,10 +618,11 @@ function HeroVideoBackground({ className = "absolute inset-0", children }: any) 
     <div ref={wrapRef} className={className}>
       <style dangerouslySetInnerHTML={{ __html: HERO_VIDEO_CSS }} />
       {HERO_VIDEOS.map((v, i) => (
-        <div key={v.src} className="absolute inset-0 transition-opacity duration-1000"
-          style={{ opacity: i === active ? 1 : 0, backgroundImage: `url(${v.poster})`, backgroundSize: "cover", backgroundPosition: "center" }}>
+        <div key={v.src} className="absolute inset-0 overflow-hidden transition-opacity duration-1000" style={{ opacity: i === active ? 1 : 0 }}>
+          {/* Relleno: la portada difuminada cubre lo que sobre a los lados; el video se ve completo */}
+          <div className="absolute -inset-8" style={{ backgroundImage: `url(${v.poster})`, backgroundSize: "cover", backgroundPosition: "center", filter: "blur(28px) brightness(0.55)" }} />
           <video
-            className="hero-video absolute inset-0 w-full h-full object-cover"
+            className="hero-video absolute inset-0 w-full h-full object-contain"
             poster={v.poster}
             muted
             playsInline
@@ -665,8 +666,8 @@ function HeroVideoBackground({ className = "absolute inset-0", children }: any) 
    - Celular: el video se ve completo (horizontal) y el texto va debajo, sin taparlo. */
 function Hero({ onNav }: any) {
   return (
-    <section id="inicio" className="relative overflow-hidden md:h-[calc(100svh-65px)] md:min-h-[560px]" style={{ background: C.carbon }}>
-      <HeroVideoBackground className="relative w-full aspect-[4/3] sm:aspect-video md:absolute md:inset-0 md:aspect-auto">
+    <section id="inicio" className="relative overflow-hidden md:h-[min(calc(100svh-65px),56.25vw)] md:min-h-[520px]" style={{ background: C.carbon }}>
+      <HeroVideoBackground className="relative w-full aspect-video md:absolute md:inset-0 md:aspect-auto">
         <div className="absolute inset-0 pointer-events-none hidden md:block"
           style={{ background: "linear-gradient(0deg, rgba(15,13,11,0.82) 0%, rgba(15,13,11,0.45) 24%, rgba(15,13,11,0) 46%)" }} />
         <div className="absolute inset-0 pointer-events-none hidden md:block"
