@@ -167,6 +167,7 @@ function Login({ supabase, say }: any) {
           <button type="button" className="text-xs underline" style={{ color: K.sub }} onClick={() => { setMode(mode === "login" ? "forgot" : "login"); setErr(""); }}>
             {mode === "login" ? "Olvidé mi contraseña" : "Volver a entrar"}
           </button>
+          <a href="/" className="text-xs text-center" style={{ color: K.sub }}>← Volver al sitio</a>
         </div>
       </form>
     </Centered>
