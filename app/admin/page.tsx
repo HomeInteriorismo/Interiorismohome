@@ -10,7 +10,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LogOut, Package, MessageCircle, Users, Upload, Trash2, ChevronUp, ChevronDown, Star,
-  Eye, EyeOff, ArrowLeft, Rocket, Check, Loader2, Plus, X,
+  Eye, EyeOff, ArrowLeft, Rocket, Check, Loader2, Plus, X, LayoutDashboard, Menu, Search, CalendarClock, ChevronRight,
 } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin-client";
 
@@ -26,6 +26,53 @@ const UNITS = [
   { v: "m2", l: "por m²" }, { v: "ml", l: "por metro lineal" }, { v: "pieza", l: "por pieza" }, { v: "cotizar", l: "A cotizar (sin precio)" },
 ];
 const LEAD_STATUS = ["Nuevo", "Contactado", "Cotización enviada", "Seguimiento", "Ganado", "Perdido"];
+const STATUS_COLOR: Record<string, string> = {
+  Nuevo: "#BE7A4E", Contactado: "#5B6B7A", "Cotización enviada": "#AD7C2C", Seguimiento: "#AD7C2C", Ganado: "#3F6B4A", Perdido: "#9A9184",
+};
+
+/* Almacenamiento: plan gratis de Supabase = 1 GB. Se bloquea al 95 % para no topar. */
+const STORAGE_LIMIT = 1024 * 1024 * 1024;
+const STORAGE_BLOCK = 0.95;
+function fmtBytes(b: number) {
+  if (b < 1024 * 1024) return `${Math.max(1, Math.round(b / 1024))} KB`;
+  if (b < 1024 * 1024 * 1024) return `${(b / 1024 / 1024).toFixed(b < 10 * 1024 * 1024 ? 1 : 0)} MB`;
+  return `${(b / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+async function storageUsed(supabase: any): Promise<number> {
+  const { data, error } = await supabase.rpc("storage_usage");
+  if (error) return 0;
+  return (data || []).reduce((t: number, r: any) => t + Number(r.bytes || 0), 0);
+}
+/* ¿Cabe un archivo de este tamaño? */
+async function hasRoom(supabase: any, bytes: number) {
+  return (await storageUsed(supabase)) + bytes <= STORAGE_LIMIT * STORAGE_BLOCK;
+}
+/* Limpieza automática (una vez al día): borra fotos subidas que ya no usa ningún producto */
+async function autoClean(supabase: any) {
+  try {
+    const st = await supabase.from("app_state").select("value").eq("key", "last_cleanup").maybeSingle();
+    const last = st.data?.value?.at ? new Date(st.data.value.at).getTime() : 0;
+    if (Date.now() - last < 24 * 3600 * 1000) return st.data?.value || null;
+    const { data } = await supabase.rpc("storage_orphans");
+    const names = (data || []).map((r: any) => r.name);
+    const bytes = (data || []).reduce((t: number, r: any) => t + Number(r.bytes || 0), 0);
+    if (names.length) await supabase.storage.from(BUCKET).remove(names);
+    const value = { at: new Date().toISOString(), removed: names.length, bytes };
+    await supabase.from("app_state").upsert({ key: "last_cleanup", value, updated_at: value.at });
+    return value;
+  } catch { return null; }
+}
+const money = (n: any) => Number(n || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 });
+const todayStr = () => new Date().toLocaleDateString("en-CA");
+function ago(iso: string) {
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 2) return "hace un momento"; if (m < 60) return `hace ${m} min`;
+  const h = Math.round(m / 60); if (h < 24) return `hace ${h} h`;
+  const d = Math.round(h / 24); return d === 1 ? "ayer" : `hace ${d} días`;
+}
+function shortDate(d: string) {
+  return new Date(d + (d.length === 10 ? "T12:00:00" : "")).toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+}
 
 /* Foto guardada como "/img/x.jpg" (incluida en el sitio) o "producto/archivo.jpg" (Supabase Storage) */
 function photoUrl(path: string) {
@@ -210,16 +257,37 @@ function SetPassword({ supabase, say, onDone }: any) {
   );
 }
 
-/* ---------------- Tablero ---------------- */
+/* ---------------- Tablero (menú lateral) ---------------- */
+const SECTIONS: any[] = [
+  { id: "inicio", label: "Inicio", Ico: LayoutDashboard },
+  { id: "productos", label: "Productos", Ico: Package },
+  { id: "cotizaciones", label: "Cotizaciones", Ico: MessageCircle },
+  { id: "usuarios", label: "Usuarios", Ico: Users, admin: true },
+];
+
 function Dashboard({ supabase, session, profile, say, onLogout }: any) {
   const isAdmin = profile.role === "ADMIN";
-  const [tab, setTab] = useState<"productos" | "cotizaciones" | "usuarios">("productos");
+  const sections = SECTIONS.filter((x) => !x.admin || isAdmin);
+  const initial = typeof window !== "undefined" ? window.location.hash.replace("#", "") : "";
+  const [tab, setTabState] = useState<string>(sections.some((x) => x.id === initial) ? initial : "inicio");
   const [editing, setEditing] = useState<string | null>(null);
+  const [leadFilter, setLeadFilter] = useState("Todas");
   const [dirty, setDirty] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [drawer, setDrawer] = useState(false);
+  const [used, setUsed] = useState<number | null>(null);
 
+  const refreshStorage = useCallback(() => { storageUsed(supabase).then(setUsed); }, [supabase]);
+  useEffect(() => { refreshStorage(); }, [refreshStorage]);
   useEffect(() => { try { setDirty(localStorage.getItem("hi_dirty") === "1"); } catch {} }, []);
   const markDirty = useCallback(() => { setDirty(true); try { localStorage.setItem("hi_dirty", "1"); } catch {} }, []);
+
+  const go = (id: string, opts: any = {}) => {
+    setTabState(id); setEditing(opts.edit || null); setDrawer(false);
+    if (opts.filter) setLeadFilter(opts.filter);
+    try { history.replaceState(null, "", "#" + id); } catch {}
+    window.scrollTo(0, 0);
+  };
 
   const publish = async () => {
     setPublishing(true);
@@ -229,44 +297,202 @@ function Dashboard({ supabase, session, profile, say, onLogout }: any) {
       const j = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(j.error || `(${res.status})`);
       setDirty(false); try { localStorage.removeItem("hi_dirty"); } catch {}
+      const at = new Date().toISOString();
+      await supabase.from("app_state").upsert({ key: "last_publish", value: { at, by: profile.name }, updated_at: at });
       say("Publicando… el sitio se actualiza en 1–2 minutos");
     } catch (e: any) { say("Error al publicar: " + e.message); }
     setPublishing(false);
   };
 
-  const tabs: any[] = [
-    ["productos", "Productos", Package], ["cotizaciones", "Cotizaciones", MessageCircle],
-    ...(isAdmin ? [["usuarios", "Usuarios", Users]] : []),
-  ];
-  return (
-    <div>
-      <header className="sticky top-0 z-30" style={{ background: K.panel, borderBottom: `1px solid ${K.line}` }}>
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-3 flex items-center gap-3 flex-wrap">
-          <p className="text-lg mr-2" style={{ fontFamily: "'Fraunces', serif" }}>Home Interiorismo <span className="text-xs align-middle" style={{ color: K.sub }}>· Panel</span></p>
-          <nav className="flex gap-1 order-3 md:order-none w-full md:w-auto overflow-x-auto">
-            {tabs.map(([id, label, Ico]) => (
-              <button key={id} onClick={() => { setTab(id); setEditing(null); }}
-                className="flex items-center gap-1.5 text-sm px-3 py-2 rounded-full whitespace-nowrap"
-                style={{ background: tab === id ? K.ink : "transparent", color: tab === id ? "#fff" : K.ink }}>
-                <Ico size={15} /> {label}
-              </button>
-            ))}
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
-            <Btn kind={dirty ? "primary" : "ghost"} onClick={publish} disabled={publishing} title="Lleva los cambios al sitio público">
-              {publishing ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />} Publicar cambios{dirty ? " •" : ""}
-            </Btn>
-            <Btn onClick={onLogout} title="Salir"><LogOut size={15} /></Btn>
+  const current = sections.find((x) => x.id === tab) || sections[0];
+  const nav = (
+    <nav className="flex flex-col gap-0.5">
+      {sections.map(({ id, label, Ico }) => (
+        <button key={id} onClick={() => go(id)}
+          className="flex items-center gap-3 text-[15px] px-3 py-2.5 rounded-lg text-left"
+          style={{ background: tab === id ? K.bg : "transparent", color: tab === id ? K.ink : K.sub, fontWeight: tab === id ? 600 : 500 }}>
+          <Ico size={18} strokeWidth={tab === id ? 2.2 : 1.8} /> {label}
+        </button>
+      ))}
+    </nav>
+  );
+  const publishBtn = (full = false) => (
+    <Btn kind={dirty ? "primary" : "ghost"} onClick={publish} disabled={publishing} className={full ? "w-full py-2.5" : ""} title="Lleva los cambios al sitio público">
+      {publishing ? <Loader2 size={15} className="animate-spin" /> : <Rocket size={15} />} {full || dirty ? "Publicar cambios" : "Publicar"}
+    </Btn>
+  );
+  const side = (
+    <div className="flex flex-col h-full">
+      <div className="px-3 pt-5 pb-6">
+        <p className="text-[19px] leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>Home Interiorismo</p>
+        <p className="text-xs mt-0.5" style={{ color: K.sub }}>Panel de administración</p>
+      </div>
+      {nav}
+      <div className="mt-auto flex flex-col gap-4 pt-6">
+        <div className="px-1">{publishBtn(true)}{dirty && <p className="text-[11px] mt-1.5 text-center" style={{ color: K.accentDark }}>Hay cambios sin publicar</p>}</div>
+        <StorageBar used={used} compact />
+        <div className="flex items-center gap-2 px-3 py-3" style={{ borderTop: `1px solid ${K.line}` }}>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold truncate">{profile.name}</p>
+            <p className="text-[11px]" style={{ color: K.sub }}>{isAdmin ? "Administrador" : "Colaborador"}</p>
           </div>
+          <button onClick={onLogout} title="Salir" className="p-2 rounded-lg" style={{ color: K.sub }}><LogOut size={17} /></button>
         </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="md:grid md:grid-cols-[248px_minmax(0,1fr)] min-h-screen">
+      <aside className="hidden md:block sticky top-0 h-screen px-3 overflow-y-auto" style={{ background: K.panel, borderRight: `1px solid ${K.line}` }}>{side}</aside>
+
+      {/* Celular: barra superior + menú lateral deslizable */}
+      <header className="md:hidden sticky top-0 z-30 flex items-center gap-2 px-3 h-14" style={{ background: K.panel, borderBottom: `1px solid ${K.line}`, paddingTop: "env(safe-area-inset-top, 0px)" }}>
+        <button onClick={() => setDrawer(true)} aria-label="Abrir menú" className="p-2 -ml-1 rounded-lg"><Menu size={22} /></button>
+        <p className="font-semibold text-[15px] flex-1 truncate">{current.label}</p>
+        {publishBtn(false)}
       </header>
-      <main className="max-w-6xl mx-auto px-4 md:px-6 py-6">
-        <p className="text-xs mb-5" style={{ color: K.sub }}>{profile.name} · {isAdmin ? "Administrador" : "Colaborador"}</p>
-        {tab === "productos" && !editing && <ProductList supabase={supabase} say={say} onEdit={setEditing} markDirty={markDirty} />}
-        {tab === "productos" && editing && <ProductEditor supabase={supabase} id={editing} say={say} onBack={() => setEditing(null)} markDirty={markDirty} />}
-        {tab === "cotizaciones" && <Leads supabase={supabase} say={say} />}
+      {drawer && (
+        <div className="md:hidden fixed inset-0 z-40" onClick={() => setDrawer(false)}>
+          <div className="absolute inset-0" style={{ background: "rgba(34,29,23,0.35)" }} />
+          <aside className="absolute left-0 top-0 bottom-0 w-[82%] max-w-[300px] px-3 overflow-y-auto" onClick={(e) => e.stopPropagation()}
+            style={{ background: K.panel, paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)", overscrollBehavior: "contain" }}>
+            {side}
+          </aside>
+        </div>
+      )}
+
+      <main className="min-w-0 px-4 md:px-10 py-6 md:py-9 max-w-5xl w-full">
+        {tab === "inicio" && <Home supabase={supabase} profile={profile} used={used} go={go} />}
+        {tab === "productos" && !editing && <ProductList supabase={supabase} say={say} onEdit={(id: string) => go("productos", { edit: id })} markDirty={markDirty} />}
+        {tab === "productos" && editing && <ProductEditor supabase={supabase} id={editing} say={say} onBack={() => go("productos")} markDirty={markDirty} onStorage={refreshStorage} />}
+        {tab === "cotizaciones" && <Leads supabase={supabase} say={say} isAdmin={isAdmin} filter={leadFilter} setFilter={setLeadFilter} />}
         {tab === "usuarios" && isAdmin && <UsersAdmin supabase={supabase} say={say} me={profile} />}
       </main>
+    </div>
+  );
+}
+
+/* Barra de almacenamiento: verde < 75 %, ámbar < 90 %, rojo después */
+function StorageBar({ used, compact = false }: any) {
+  if (used === null) return null;
+  const pct = Math.min(100, (used / STORAGE_LIMIT) * 100);
+  const color = pct >= 90 ? K.red : pct >= 75 ? K.amber : K.green;
+  const full = used >= STORAGE_LIMIT * STORAGE_BLOCK;
+  return (
+    <div className={compact ? "px-3" : ""}>
+      <div className="flex items-baseline justify-between mb-1.5">
+        <span className={compact ? "text-[11px] font-semibold uppercase tracking-wider" : "text-sm font-semibold"} style={{ color: compact ? K.sub : K.ink }}>Almacenamiento</span>
+        <span className="text-[11px] tabular-nums" style={{ color: K.sub }}>{fmtBytes(used)} de 1 GB</span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: K.line }} role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
+        <div className="h-full rounded-full" style={{ width: `${Math.max(pct, 1.5)}%`, background: color }} />
+      </div>
+      {!compact && (
+        <p className="text-xs mt-2" style={{ color: full ? K.red : K.sub }}>
+          {full ? "Espacio lleno: borra fotos o videos que ya no uses para poder subir nuevos."
+            : pct >= 75 ? `Queda ${fmtBytes(STORAGE_LIMIT - used)}. Considera borrar fotos que ya no uses.`
+            : `Queda ${fmtBytes(STORAGE_LIMIT - used)} libre. Las fotos se reducen solas al subirlas.`}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ---------------- Inicio ---------------- */
+function Home({ supabase, profile, used, go }: any) {
+  const [d, setD] = useState<any>(null);
+  const [clean, setClean] = useState<any>(null);
+  useEffect(() => {
+    (async () => {
+      const month = new Date(); month.setDate(1); month.setHours(0, 0, 0, 0);
+      const [leads, prods, pub] = await Promise.all([
+        supabase.from("leads").select("id,name,product,status,amount,follow_up,whatsapp,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("products").select("id,name,price,price_unit,visible").eq("visible", true).order("sort"),
+        supabase.from("app_state").select("value").eq("key", "last_publish").maybeSingle(),
+      ]);
+      const L = leads.data || []; const today = todayStr();
+      const open = (l: any) => !["Ganado", "Perdido"].includes(l.status);
+      const inMonth = (iso: string) => new Date(iso) >= month;
+      setD({
+        nuevas: L.filter((l: any) => l.status === "Nuevo").length,
+        due: L.filter((l: any) => open(l) && l.follow_up && l.follow_up <= today).sort((a: any, b: any) => a.follow_up.localeCompare(b.follow_up)),
+        cotizado: L.filter((l: any) => l.amount && inMonth(l.created_at)).reduce((t: number, l: any) => t + Number(l.amount), 0),
+        ganado: L.filter((l: any) => l.status === "Ganado" && l.amount && inMonth(l.updated_at || l.created_at)).reduce((t: number, l: any) => t + Number(l.amount), 0),
+        sinPrecio: (prods.data || []).filter((p: any) => p.price_unit !== "cotizar" && (p.price === null || p.price === undefined)),
+        pub: pub.data?.value || null,
+      });
+    })();
+    autoClean(supabase).then(setClean);
+  }, [supabase]);
+
+  const first = String(profile.name || "").split(" ")[0];
+  const fecha = new Date().toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
+  if (!d) return <Loader2 className="animate-spin" />;
+  const Stat = ({ label, value, sub, onClick, tone }: any) => (
+    <button onClick={onClick} disabled={!onClick} className="text-left rounded-xl p-4 md:p-5 disabled:cursor-default" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+      <p className="text-xs" style={{ color: K.sub }}>{label}</p>
+      <p className="text-2xl md:text-[28px] mt-1 tabular-nums" style={{ fontFamily: "'Fraunces', serif", color: tone || K.ink }}>{value}</p>
+      {sub && <p className="text-[11px] mt-1" style={{ color: K.sub }}>{sub}</p>}
+    </button>
+  );
+  return (
+    <div>
+      <p className="text-sm first-letter:uppercase" style={{ color: K.sub }}>{fecha}</p>
+      <h1 className="text-[28px] md:text-[34px] mt-0.5 mb-6" style={{ fontFamily: "'Fraunces', serif" }}>Hola, {first}</h1>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <Stat label="Cotizaciones nuevas" value={d.nuevas} tone={d.nuevas ? K.accent : undefined} sub={d.nuevas ? "Toca para verlas" : "Al día"} onClick={() => go("cotizaciones", { filter: "Nuevo" })} />
+        <Stat label="Seguimientos pendientes" value={d.due.length} tone={d.due.length ? K.amber : undefined} sub="Para hoy o atrasados" onClick={d.due.length ? () => go("cotizaciones", { filter: "Por seguir" }) : undefined} />
+        <Stat label="Cotizado este mes" value={money(d.cotizado)} />
+        <Stat label="Ganado este mes" value={money(d.ganado)} tone={d.ganado ? K.green : undefined} />
+      </div>
+
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+        <section>
+          <h2 className="text-sm font-semibold mb-3">Para dar seguimiento</h2>
+          {d.due.length === 0 ? (
+            <p className="text-sm rounded-xl px-4 py-5" style={{ background: K.panel, border: `1px solid ${K.line}`, color: K.sub }}>Nada pendiente para hoy.</p>
+          ) : (
+            <div className="rounded-xl overflow-hidden" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+              {d.due.slice(0, 6).map((l: any, i: number) => (
+                <div key={l.id} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: i ? `1px solid ${K.line}` : undefined }}>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate">{l.name}</p>
+                    <p className="text-xs truncate" style={{ color: K.sub }}>{l.product || "Sin producto"} · {l.follow_up < todayStr() ? <span style={{ color: K.red }}>atrasado ({shortDate(l.follow_up)})</span> : "hoy"}</p>
+                  </div>
+                  {l.whatsapp && <a href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer" className="shrink-0 p-2 rounded-lg" style={{ color: K.green }} aria-label={`WhatsApp a ${l.name}`}><MessageCircle size={18} /></a>}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {d.sinPrecio.length > 0 && (
+            <>
+              <h2 className="text-sm font-semibold mt-8 mb-3">Productos sin precio</h2>
+              <div className="flex flex-wrap gap-2">
+                {d.sinPrecio.map((p: any) => (
+                  <button key={p.id} onClick={() => go("productos", { edit: p.id })} className="text-sm px-3 py-1.5 rounded-full inline-flex items-center gap-1" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+                    {p.name} <ChevronRight size={14} style={{ color: K.sub }} />
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs mt-2" style={{ color: K.sub }}>Se muestran como "A cotizar" en el sitio hasta que les pongas precio.</p>
+            </>
+          )}
+        </section>
+
+        <aside className="flex flex-col gap-4">
+          <div className="rounded-xl p-4" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+            <StorageBar used={used} />
+            {clean?.removed > 0 && <p className="text-[11px] mt-2" style={{ color: K.green }}>Limpieza automática: se liberaron {fmtBytes(clean.bytes)} de fotos sin uso.</p>}
+          </div>
+          <div className="rounded-xl p-4" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+            <p className="text-sm font-semibold">Última publicación</p>
+            <p className="text-xs mt-1" style={{ color: K.sub }}>{d.pub ? `${ago(d.pub.at)}${d.pub.by ? ` · ${d.pub.by}` : ""}` : "Aún no se registra ninguna desde el panel."}</p>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
@@ -317,7 +543,7 @@ function ProductList({ supabase, say, onEdit, markDirty }: any) {
   );
   return (
     <div>
-      <h1 className="text-2xl mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Productos</h1>
+      <h1 className="text-[28px] md:text-[32px] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Productos</h1>
       <p className="text-sm mb-6" style={{ color: K.sub }}>Toca un producto para cambiar su nombre, descripción, precio y fotos. Las flechas cambian el orden en el sitio.</p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {items.map((p, i) => (
@@ -346,7 +572,7 @@ function ProductList({ supabase, say, onEdit, markDirty }: any) {
   );
 }
 
-function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
+function ProductEditor({ supabase, id, say, onBack, markDirty, onStorage }: any) {
   const [p, setP] = useState<any>(null);
   const [photos, setPhotos] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
@@ -408,7 +634,7 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
       await supabase.from("products").update({ cover_photo_url: other ? other.path : null }).eq("id", id);
       setP({ ...p, cover_photo_url: other ? other.path : null });
     }
-    setPhotos((l) => l.filter((x) => x.id !== ph.id)); setConfirmDel(null); markDirty(); say("Foto borrada");
+    setPhotos((l) => l.filter((x) => x.id !== ph.id)); setConfirmDel(null); markDirty(); onStorage?.(); say("Foto borrada");
   };
 
   const upload = async (files: FileList | null) => {
@@ -422,6 +648,7 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
       setUploading(`Subiendo ${k + 1} de ${files.length}…`);
       try {
         const blob = await shrinkImage(f);
+        if (!(await hasRoom(supabase, blob.size))) { say("Error: espacio lleno. Borra fotos que ya no uses para subir nuevas."); break; }
         const path = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`;
         const up = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: "image/jpeg", upsert: false });
         if (up.error) throw up.error;
@@ -431,7 +658,7 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
       } catch (e: any) { say("Error al subir " + f.name + ": " + (e.message || "")); }
     }
     setUploading(""); if (fileRef.current) fileRef.current.value = "";
-    if (ok) { markDirty(); say(`${ok} foto(s) agregada(s)`); }
+    if (ok) { markDirty(); onStorage?.(); say(ok === 1 ? "Foto agregada" : `${ok} fotos agregadas`); }
   };
 
   if (!p) return <Loader2 className="animate-spin" />;
@@ -525,54 +752,206 @@ function ProductEditor({ supabase, id, say, onBack, markDirty }: any) {
 }
 
 /* ---------------- Cotizaciones ---------------- */
-function Leads({ supabase, say }: any) {
+function StatusPill({ status }: any) {
+  const c = STATUS_COLOR[status] || K.sub;
+  return <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold whitespace-nowrap" style={{ color: c }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />{status}</span>;
+}
+
+function Leads({ supabase, say, isAdmin, filter, setFilter }: any) {
   const [items, setItems] = useState<any[] | null>(null);
-  const [filter, setFilter] = useState("Todas");
-  useEffect(() => {
-    supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(300)
-      .then(({ data, error }: any) => { if (error) say("Error al cargar cotizaciones"); setItems(data || []); });
+  const [products, setProducts] = useState<string[]>([]);
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState<any>(null); // cotización abierta (o {} para nueva)
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(500);
+    if (error) say("Error al cargar cotizaciones");
+    setItems(data || []);
   }, [supabase, say]);
-  const setStatus = async (l: any, status: string) => {
-    const { error } = await supabase.from("leads").update({ status }).eq("id", l.id);
-    if (error) return say("Error al cambiar estado");
-    setItems((it) => it!.map((x) => x.id === l.id ? { ...x, status } : x));
-  };
+  useEffect(() => {
+    load();
+    supabase.from("products").select("name").order("sort").then(({ data }: any) => setProducts((data || []).map((p: any) => p.name)));
+  }, [load, supabase]);
+
   if (!items) return <Loader2 className="animate-spin" />;
-  const shown = filter === "Todas" ? items : items.filter((l) => l.status === filter);
+  const today = todayStr();
+  const isDue = (l: any) => l.follow_up && l.follow_up <= today && !["Ganado", "Perdido"].includes(l.status);
+  const filters = ["Todas", "Por seguir", ...LEAD_STATUS];
+  const count = (f: string) => f === "Todas" ? items.length : f === "Por seguir" ? items.filter(isDue).length : items.filter((l) => l.status === f).length;
+  const term = q.trim().toLowerCase();
+  const shown = items
+    .filter((l) => filter === "Todas" ? true : filter === "Por seguir" ? isDue(l) : l.status === filter)
+    .filter((l) => !term || [l.name, l.whatsapp, l.product, l.notes].some((v) => String(v || "").toLowerCase().includes(term)));
+
   return (
     <div>
-      <h1 className="text-2xl mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Cotizaciones</h1>
-      <p className="text-sm mb-5" style={{ color: K.sub }}>Solicitudes que llegan desde el formulario del sitio.</p>
-      <div className="flex gap-2 mb-5 overflow-x-auto">
-        {["Todas", ...LEAD_STATUS].map((s) => (
-          <button key={s} onClick={() => setFilter(s)} className="text-xs px-3 py-1.5 rounded-full whitespace-nowrap"
-            style={{ background: filter === s ? K.ink : K.panel, color: filter === s ? "#fff" : K.ink, border: `1px solid ${K.line}` }}>
-            {s}{s !== "Todas" ? ` (${items.filter((l) => l.status === s).length})` : ` (${items.length})`}
+      <div className="flex items-end justify-between gap-3 mb-5">
+        <div>
+          <h1 className="text-[28px] md:text-[32px]" style={{ fontFamily: "'Fraunces', serif" }}>Cotizaciones</h1>
+          <p className="text-sm" style={{ color: K.sub }}>Del sitio y las que capturas a mano.</p>
+        </div>
+        <Btn kind="dark" onClick={() => setOpen({})}><Plus size={16} /> Nueva</Btn>
+      </div>
+
+      <div className="relative mb-3">
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: K.sub }} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por nombre, teléfono o producto" className={inputCls + " pl-9"} style={inputSty} />
+      </div>
+      <div className="flex gap-1.5 mb-5 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0">
+        {filters.map((f) => (
+          <button key={f} onClick={() => setFilter(f)} className="text-xs px-3 py-1.5 rounded-full whitespace-nowrap shrink-0"
+            style={{ background: filter === f ? K.ink : K.panel, color: filter === f ? "#fff" : K.ink, border: `1px solid ${filter === f ? K.ink : K.line}` }}>
+            {f} <span className="tabular-nums" style={{ opacity: 0.6 }}>{count(f)}</span>
           </button>
         ))}
       </div>
-      {shown.length === 0 && <p className="text-sm" style={{ color: K.sub }}>No hay cotizaciones aquí todavía.</p>}
-      <div className="flex flex-col gap-3">
-        {shown.map((l) => (
-          <div key={l.id} className="rounded-xl p-4 flex flex-col md:flex-row md:items-center gap-3" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold">{l.name} <span className="text-xs font-normal" style={{ color: K.sub }}>· {new Date(l.created_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}</span></p>
-              <p className="text-sm" style={{ color: K.sub }}>{[l.product, l.finish, l.space, l.medidas].filter(Boolean).join(" · ") || "Sin detalles"}</p>
-              {l.message && <p className="text-sm mt-1 whitespace-pre-line [overflow-wrap:anywhere]">{l.message}</p>}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {l.whatsapp && (
-                <a href={waLink(l.whatsapp)} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold whitespace-nowrap shrink-0" style={{ background: K.green, color: "#fff" }}>
-                  <MessageCircle size={14} /> {l.whatsapp}
-                </a>
-              )}
-              <select value={l.status} onChange={(e) => setStatus(l, e.target.value)} className="rounded-full px-3 py-2 text-sm" style={inputSty}>
-                {LEAD_STATUS.map((s) => <option key={s}>{s}</option>)}
-              </select>
-            </div>
+
+      {shown.length === 0 ? (
+        <p className="text-sm rounded-xl px-4 py-6 text-center" style={{ background: K.panel, border: `1px solid ${K.line}`, color: K.sub }}>
+          {items.length === 0 ? "Todavía no hay cotizaciones. Las del formulario del sitio aparecen aquí solas." : "No hay cotizaciones con este filtro."}
+        </p>
+      ) : (
+        <div className="rounded-xl overflow-hidden" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
+          {shown.map((l, i) => (
+            <button key={l.id} onClick={() => setOpen(l)} className="w-full text-left flex items-center gap-3 px-4 py-3.5" style={{ borderTop: i ? `1px solid ${K.line}` : undefined }}>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-[15px] truncate">{l.name}</p>
+                  {l.origen === "Manual" && <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0" style={{ background: K.bg, color: K.sub }}>A mano</span>}
+                </div>
+                <p className="text-xs truncate mt-0.5" style={{ color: K.sub }}>
+                  {[l.product, l.medidas].filter(Boolean).join(" · ") || "Sin detalles"} · {shortDate(l.created_at)}
+                </p>
+                <div className="flex items-center gap-3 mt-1.5">
+                  <StatusPill status={l.status} />
+                  {l.amount != null && <span className="text-[11px] tabular-nums" style={{ color: K.ink }}>{money(l.amount)}</span>}
+                  {l.follow_up && !["Ganado", "Perdido"].includes(l.status) && (
+                    <span className="inline-flex items-center gap-1 text-[11px]" style={{ color: l.follow_up < today ? K.red : l.follow_up === today ? K.amber : K.sub }}>
+                      <CalendarClock size={12} /> {l.follow_up === today ? "Hoy" : shortDate(l.follow_up)}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <ChevronRight size={18} className="shrink-0" style={{ color: K.line }} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {open && <LeadSheet supabase={supabase} say={say} lead={open} products={products} isAdmin={isAdmin}
+        onClose={() => setOpen(null)}
+        onSaved={(row: any, isNew: boolean) => { setItems((it) => isNew ? [row, ...it!] : it!.map((x) => x.id === row.id ? row : x)); setOpen(null); }}
+        onDeleted={(id: string) => { setItems((it) => it!.filter((x) => x.id !== id)); setOpen(null); }} />}
+    </div>
+  );
+}
+
+/* Ficha de una cotización (en celular ocupa la pantalla; en computadora, un panel a la derecha) */
+function LeadSheet({ supabase, say, lead, products, isAdmin, onClose, onSaved, onDeleted }: any) {
+  const isNew = !lead.id;
+  const [f, setF] = useState<any>({
+    name: lead.name || "", whatsapp: lead.whatsapp || "", product: lead.product || "", space: lead.space || "", medidas: lead.medidas || "",
+    message: lead.message || "", status: lead.status || "Nuevo", amount: lead.amount ?? "", follow_up: lead.follow_up || "", notes: lead.notes || "",
+  });
+  const [busy, setBusy] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const set = (k: string) => (e: any) => setF({ ...f, [k]: e.target.value });
+  useEffect(() => {
+    const prev = document.body.style.overflow; document.body.style.overflow = "hidden";
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => { document.body.style.overflow = prev; window.removeEventListener("keydown", esc); };
+  }, [onClose]);
+
+  const save = async () => {
+    const wa = f.whatsapp.replace(/\D/g, "").replace(/^52(\d{10})$/, "$1");
+    if (!f.name.trim()) return say("Error: falta el nombre");
+    if (wa && wa.length !== 10) return say("Error: el WhatsApp debe tener 10 dígitos");
+    const amount = f.amount === "" ? null : Number(f.amount);
+    if (amount !== null && (isNaN(amount) || amount < 0)) return say("Error: monto inválido");
+    const row: any = {
+      name: f.name.trim().slice(0, 120), whatsapp: wa || null, product: f.product.trim() || null, space: f.space.trim() || null,
+      medidas: f.medidas.trim() || null, message: f.message.trim() || null, status: f.status, amount,
+      follow_up: f.follow_up || null, notes: f.notes.trim() || null, updated_at: new Date().toISOString(),
+    };
+    setBusy(true);
+    const res = isNew
+      ? await supabase.from("leads").insert({ ...row, origen: "Manual" }).select().single()
+      : await supabase.from("leads").update(row).eq("id", lead.id).select().single();
+    setBusy(false);
+    if (res.error) return say("Error al guardar: " + res.error.message);
+    say(isNew ? "Cotización agregada" : "Cambios guardados");
+    onSaved(res.data, isNew);
+  };
+  const remove = async () => {
+    const { error } = await supabase.from("leads").delete().eq("id", lead.id);
+    if (error) return say("Error al borrar");
+    say("Cotización borrada"); onDeleted(lead.id);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label={isNew ? "Nueva cotización" : `Cotización de ${lead.name}`}>
+      <div className="absolute inset-0 hidden md:block" style={{ background: "rgba(34,29,23,0.3)" }} onClick={onClose} />
+      <div className="relative w-full md:max-w-[480px] h-full overflow-y-auto flex flex-col" style={{ background: K.panel, overscrollBehavior: "contain" }}>
+        <div className="sticky top-0 z-10 flex items-center gap-2 px-4 h-14" style={{ background: K.panel, borderBottom: `1px solid ${K.line}`, paddingTop: "env(safe-area-inset-top, 0px)" }}>
+          <button onClick={onClose} aria-label="Cerrar" className="p-2 -ml-2 rounded-lg"><X size={20} /></button>
+          <p className="font-semibold flex-1 truncate">{isNew ? "Nueva cotización" : lead.name}</p>
+          <Btn kind="dark" onClick={save} disabled={busy}>{busy ? <Loader2 size={15} className="animate-spin" /> : "Guardar"}</Btn>
+        </div>
+
+        <div className="px-4 py-5 flex flex-col gap-4">
+          {!isNew && (
+            <p className="text-xs" style={{ color: K.sub }}>
+              {lead.origen === "Manual" ? "Capturada a mano" : "Llegó del sitio"} · {new Date(lead.created_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}
+            </p>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Estado">
+              <select value={f.status} onChange={set("status")} className={inputCls} style={inputSty}>{LEAD_STATUS.map((s) => <option key={s}>{s}</option>)}</select>
+            </Field>
+            <Field label="Monto cotizado (MXN)">
+              <input type="number" min={0} step="1" inputMode="decimal" value={f.amount} onChange={set("amount")} placeholder="Ej. 12500" className={inputCls} style={inputSty} />
+            </Field>
           </div>
-        ))}
+          <Field label="Volver a contactar el" hint="Aparece en Inicio cuando llegue el día.">
+            <input type="date" value={f.follow_up} onChange={set("follow_up")} className={inputCls} style={inputSty} />
+          </Field>
+          <Field label="Notas internas" hint="Solo las ve tu equipo.">
+            <textarea rows={4} maxLength={2000} value={f.notes} onChange={set("notes")} placeholder="Medidas tomadas, color elegido, qué se habló…" className={inputCls} style={inputSty} />
+          </Field>
+
+          <div className="h-px my-1" style={{ background: K.line }} />
+          <Field label="Nombre del cliente"><input maxLength={120} value={f.name} onChange={set("name")} className={inputCls} style={inputSty} /></Field>
+          <Field label="WhatsApp (10 dígitos)">
+            <div className="flex gap-2">
+              <input type="tel" inputMode="tel" autoComplete="off" value={f.whatsapp} onChange={set("whatsapp")} placeholder="7551234567" className={inputCls} style={inputSty} />
+              {f.whatsapp.replace(/\D/g, "").length >= 10 && (
+                <a href={waLink(f.whatsapp)} target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp" className="shrink-0 inline-flex items-center justify-center w-11 rounded-lg" style={{ background: K.green, color: "#fff" }}><MessageCircle size={18} /></a>
+              )}
+            </div>
+          </Field>
+          <Field label="Producto">
+            <input list="lead-products" maxLength={120} value={f.product} onChange={set("product")} className={inputCls} style={inputSty} />
+            <datalist id="lead-products">{products.map((p: string) => <option key={p} value={p} />)}</datalist>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Espacio"><input maxLength={120} value={f.space} onChange={set("space")} placeholder="Ej. Terraza" className={inputCls} style={inputSty} /></Field>
+            <Field label="Medidas"><input maxLength={120} value={f.medidas} onChange={set("medidas")} placeholder="Ej. 3 × 2.5 m" className={inputCls} style={inputSty} /></Field>
+          </div>
+          <Field label="Mensaje del cliente"><textarea rows={3} maxLength={1000} value={f.message} onChange={set("message")} className={inputCls} style={inputSty} /></Field>
+
+          {!isNew && isAdmin && (
+            <div className="pt-2 pb-6">
+              {confirmDel ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm flex-1" style={{ color: K.red }}>¿Borrar esta cotización? No se puede deshacer.</span>
+                  <Btn kind="danger" onClick={remove}>Borrar</Btn><Btn onClick={() => setConfirmDel(false)}>No</Btn>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmDel(true)} className="text-sm inline-flex items-center gap-1.5" style={{ color: K.red }}><Trash2 size={15} /> Borrar cotización</button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -611,7 +990,7 @@ function UsersAdmin({ supabase, say, me }: any) {
   if (!items) return <Loader2 className="animate-spin" />;
   return (
     <div>
-      <h1 className="text-2xl mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Usuarios</h1>
+      <h1 className="text-[28px] md:text-[32px] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>Usuarios</h1>
       <p className="text-sm mb-6" style={{ color: K.sub }}>Los colaboradores pueden editar productos, fotos, precios, cotizaciones y publicar. Solo el administrador maneja usuarios.</p>
       <form onSubmit={invite} className="rounded-2xl p-5 mb-6 grid md:grid-cols-4 gap-3 items-end" style={{ background: K.panel, border: `1px solid ${K.line}` }}>
         <Field label="Nombre"><input required maxLength={80} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputCls} style={inputSty} /></Field>
