@@ -43,8 +43,10 @@ const DEMO_CONFIG = {
    si el navegador bloquea la reproducción (iPhone en bajo consumo) o el video falla,
    se queda la portada y la página nunca se ve vacía. */
 const HERO_VIDEOS = [
+  { src: "/videos/screen.mp4", poster: "/videos/screen.jpg", label: "Persianas screen" },
   { src: "/videos/hero2.mp4", poster: "/videos/hero2.jpg", label: "Persianas" },
   { src: "/videos/toldo.mp4", poster: "/videos/toldo.jpg", label: "Toldo retráctil" },
+  { src: "/videos/sheer.mp4", poster: "/videos/sheer.jpg", label: "Sheer Elegance" },
 ];
 
 /* ============================================================
