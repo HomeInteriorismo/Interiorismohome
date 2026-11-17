@@ -1,15 +1,17 @@
 name: Keep Supabase alive
 
+# Supabase gratis pausa proyectos "inactivos". Desde nov 2026 solo leer no bastó,
+# así que cada visita ESCRIBE un latido en la base (función public.ping, ver supabase/002_latido.sql).
 on:
   schedule:
-    - cron: "17 15 */3 * *"   # cada 3 días, 9:17 am hora de Zihuatanejo
+    - cron: "17 15 */2 * *"   # cada 2 días, 9:17 am hora de Zihuatanejo
   workflow_dispatch:           # botón "Run workflow" para probar a mano
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping a la tabla leads
+      - name: Latido en Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -17,10 +19,14 @@ jobs:
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
             echo "Faltan los secrets SUPABASE_URL o SUPABASE_ANON_KEY"; exit 1
           fi
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
-            "$SUPABASE_URL/rest/v1/leads?select=id&limit=1" \
-            -H "apikey: $SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
-          echo "Respuesta de Supabase: $code"
-          # Si no responde 200, el job falla y GitHub te manda correo: señal de que el proyecto se pausó
-          [ "$code" = "200" ]
+          for intento in 1 2 3; do
+            code=$(curl -s -o resp.txt -w "%{http_code}" --max-time 30 -X POST \
+              "$SUPABASE_URL/rest/v1/rpc/ping" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Content-Type: application/json" -d '{}')
+            echo "Intento $intento: Supabase respondió $code $(cat resp.txt)"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          # Si falla, GitHub te manda correo: señal de que el proyecto se pausó
+          exit 1
